@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="neural">
+      <UniqueIdentifier>{38ff9e6f-bc41-4e3d-87a0-e2a1b7b929b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="neural\lib">
+      <UniqueIdentifier>{9679be75-fa37-48ee-8934-c2f6b8da01d8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="neural\ActiveFunctions.h">
+      <Filter>neural</Filter>
+    </ClInclude>
+    <ClInclude Include="neural\MNISTFunctions.h">
+      <Filter>neural</Filter>
+    </ClInclude>
+    <ClInclude Include="neural\MatrixFunctions.h">
+      <Filter>neural</Filter>
+    </ClInclude>
+    <ClInclude Include="neural\NeuralLayer.h">
+      <Filter>neural</Filter>
+    </ClInclude>
+    <ClInclude Include="neural\NeuralNet.h">
+      <Filter>neural</Filter>
+    </ClInclude>
+    <ClInclude Include="neural\lib\libconvert.h">
+      <Filter>neural\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="neural\lib\cblas.h">
+      <Filter>neural\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>neural\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>neural\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="Node.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Topology.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Package.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="neural\MyMath.h">
+      <Filter>neural</Filter>
+    </ClInclude>
+    <ClInclude Include="neural\lib\INIReader.h">
+      <Filter>neural\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="neural\lib\Timer.h">
+      <Filter>neural\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="neural\config.h">
+      <Filter>neural</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RODL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="neural\ActiveFunctions.cpp">
+      <Filter>neural</Filter>
+    </ClCompile>
+    <ClCompile Include="neural\MatrixFunctions.cpp">
+      <Filter>neural</Filter>
+    </ClCompile>
+    <ClCompile Include="neural\MNISTFunctions.cpp">
+      <Filter>neural</Filter>
+    </ClCompile>
+    <ClCompile Include="neural\NeuralLayer.cpp">
+      <Filter>neural</Filter>
+    </ClCompile>
+    <ClCompile Include="neural\NeuralNet.cpp">
+      <Filter>neural</Filter>
+    </ClCompile>
+    <ClCompile Include="neural\lib\libconvert.cpp">
+      <Filter>neural\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="Node.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Topology.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Package.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Config.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="neural\MyMath.cpp">
+      <Filter>neural</Filter>
+    </ClCompile>
+    <ClCompile Include="neural\lib\INIReader.cpp">
+      <Filter>neural\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="neural\lib\Timer.cpp">
+      <Filter>neural\lib</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="neural\lib\cblas.a">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="neural\lib\libblas.a">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="neural\lib\libgfortran.dll.a">
+      <Filter>Resource Files</Filter>
+    </Library>
+  </ItemGroup>
+</Project>
