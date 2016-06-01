@@ -13,8 +13,8 @@ Topology::~Topology()
 
 bool Topology::initGrid() {
 	int nodeNum = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn();
-	m_nodes = new vector<Node>;
-	//m_nodes->resize(0);
+	m_nodes = new vector<Node>(nodeNum);
+	m_nodes->resize(0);
 	int val = m_nodes->capacity();
 	for (int i = 0; i < Config::getInstance()->getMaxRow(); i++) {
 		for (int j = 0; j < Config::getInstance()->getMaxColumn(); j++) {
