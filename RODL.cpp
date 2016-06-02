@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
 	srand(time(NULL));
 	Topology topology;
 	topology.initGraph();
-	topology.getShortestPath(15);
+	topology.getAllShortestPath();
 
 	NeuralNet net;
 	Timer t;

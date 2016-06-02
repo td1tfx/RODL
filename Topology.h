@@ -28,6 +28,7 @@ public:
 	bool initGrid();
 	void initGraph();
 	string toString(int a);
-	int getShortestPath(int destId);
+	bool getShortestPath(int destId);
+	void getAllShortestPath();
 };
 

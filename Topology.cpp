@@ -75,7 +75,7 @@ void Topology::createNeighborGraph() {
 }
 
 
-int Topology::getShortestPath(int destId) {
+bool Topology::getShortestPath(int destId) {
 
 	Vertex s = vertex(destId, *conGraph);
 	std::vector<Vertex> parent(num_vertices(*conGraph));
@@ -91,36 +91,41 @@ int Topology::getShortestPath(int destId) {
 	vector<Node*>::iterator i;
 	for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
 		if ((*i)->getId() == destId) {
-			miMetric[(*i)->getId()] = 0;
 		}
 		else {
 			if (distMap.at((*i)->getId()) == NULL) {
-				miMetric[(*i)->getId()] = 0;
+				cout << "error: distMap = NULL" << endl;
+				return false;
 			}
 			else {
-				string linkId;
 				vector<int>* path = new vector<int>;
 				int p = (*i)->getId();
+				string linkId = toString(p);
 				int num = 0;
-				while (parent.at(p) != destId) {
+				while (p != destId){
 					p = parent.at(p);
 					(*i)->getRoutingMatrix()->getData(destId, p) = 1;
-					(*i)->getParh()->at(destId)->at(num) = p;
+					(*i)->getParh()->getData(destId, num) = p;
 					linkId = linkId + "->" + toString(p);
 					num++;
-				}
+				} 				
 				//spLink = linkEdges->at(linkId);
 				//miMetric[(*i)->getId()] = ;
-				cout << "node=" << (*i)->getId() << "dest=" << destId << " dist=" + distMap[(*i)->getId()] << "path=" << linkId << endl;
+				cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << linkId << endl;
 			}
 		}
 	}
+	return true;
+}
 
-	for (int i = 0; i < sizeof(miMetric); i++) {
-		sum += miMetric[i];
+void Topology::getAllShortestPath() {
+	vector<Node*>::iterator i;
+	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
+		if (getShortestPath((*i)->getId())) {
+			cout << "finished destination:" << (*i)->getId() << endl;
+		}
 	}
 
-	return sum;
 }
 
 

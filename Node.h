@@ -33,8 +33,7 @@ private:
 	float serveTime;
 	int packageCount;
 	d_matrix* routingMatrix;
-	typedef vector<int>* shortPath;
-	vector<shortPath>* shortRouting;
+	d_matrix* shortRouting;
 
 public:
 	Node();
@@ -65,7 +64,7 @@ public:
 	d_matrix*& getRoutingMatrix() {
 		return routingMatrix;
 	}
-	vector<shortPath>*& getParh() {
+	d_matrix*& getParh() {
 		return shortRouting;
 	}
 

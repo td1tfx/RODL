@@ -9,10 +9,13 @@ Node::Node()
 	id = -11;
 	guid.first = -1;
 	guid.second = -1;
-	d_matrix* routingMatrix = new d_matrix(Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn(), Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn());
+	int maxRow = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn();
+	int maxColumn = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn();
+	routingMatrix = new d_matrix(maxRow, maxColumn);
 	routingMatrix->initData(0);
 	//shortPath = new vector<int>();
-	shortRouting = new vector<shortPath>;
+	shortRouting = new d_matrix(maxRow, maxColumn);
+	shortRouting->initData(-1);
 }
 
 
@@ -59,6 +62,10 @@ void Node::initialPackage() {
 		for (int i = 0; i < random; i++) {
 			generatePackage();
 		}		
+	}
+	else {
+		//temp
+		generatePackage();
 	}
 }
 
