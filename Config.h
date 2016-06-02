@@ -7,6 +7,7 @@ private:
 	~Config();
 	int packageSize;
 	int neuralFirst;
+	//row and column <=10;
 	int maxRow;
 	int maxColumn;
 public:

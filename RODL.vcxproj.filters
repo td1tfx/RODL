@@ -75,6 +75,9 @@
     <ClInclude Include="neural\config.h">
       <Filter>neural</Filter>
     </ClInclude>
+    <ClInclude Include="neural\Option.h">
+      <Filter>neural</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

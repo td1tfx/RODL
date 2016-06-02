@@ -160,6 +160,7 @@
     <ClInclude Include="neural\MyMath.h" />
     <ClInclude Include="neural\NeuralLayer.h" />
     <ClInclude Include="neural\NeuralNet.h" />
+    <ClInclude Include="neural\Option.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="Package.h" />
     <ClInclude Include="stdafx.h" />

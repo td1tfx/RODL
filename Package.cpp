@@ -4,13 +4,13 @@
 
 Package::Package()
 {
-
 }
 
 Package::Package(int id)
 {
 	this->id = id;
 	size = Config::getInstance()->getPackageSize();
+	delay = 0;
 }
 
 

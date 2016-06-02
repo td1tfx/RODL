@@ -60,6 +60,7 @@ public:
 	{
 		return data;
 	}
+
 	//这个函数可能不安全，慎用！！
 	void resetDataPointer(double* d)
 	{

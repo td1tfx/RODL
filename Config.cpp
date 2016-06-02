@@ -7,8 +7,8 @@ Config* Config::m_config;
 Config::Config()
 {
 	packageSize = 0;
-	maxColumn = 10;
-	maxRow = 10;
+	maxColumn = 4;
+	maxRow = 4;
 }
 
 
