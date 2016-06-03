@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Node.h"
-#include <iostream>
 
 
 using namespace std;
@@ -17,10 +16,13 @@ private:
 	property_map<Graph, edge_weight_t>::type edges_weight = get(edge_weight, *conGraph);
 	vector<Node*>* m_nodes;
 	vector<Node*>* m_outerNodes;
+	float cuTime;
 
 	void createNeighborGraph();
+	void updateNeighborGraph();
 	float getTwoNodesDistance(int p1, int p2);
 	float getTwoNodesDistance(Node &p1, Node &p2);
+
 
 public:
 	Topology();
@@ -30,5 +32,10 @@ public:
 	string toString(int a);
 	bool getShortestPath(int destId);
 	void getAllShortestPath();
+	void runOneRound();
+	void runRounds(int num);
+	float getCuTime() {
+		return cuTime;
+	}
 };
 

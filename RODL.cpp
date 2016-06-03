@@ -14,6 +14,10 @@ int main(int argc, char* argv[])
 	Topology topology;
 	topology.initGraph();
 	topology.getAllShortestPath();
+	topology.runRounds(100);
+	topology.getAllShortestPath();
+
+	cout << "finalTime="<< topology.getCuTime() << endl;
 
 	NeuralNet net;
 	Timer t;

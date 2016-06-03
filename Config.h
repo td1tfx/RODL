@@ -7,9 +7,11 @@ private:
 	~Config();
 	int packageSize;
 	int neuralFirst;
+	int maxGenerateRate;
 	//row and column <=10;
 	int maxRow;
 	int maxColumn;
+	int bandwidth;
 public:
 	
 	static Config* getInstance() {
@@ -28,6 +30,14 @@ public:
 	}
 	int getMaxColumn() {
 		return maxColumn;
+	}
+
+	int getBandwidth() {
+		return bandwidth;
+	}
+
+	int getMaxGenerateRate() {
+		return maxGenerateRate;
 	}
 	//void init();
 };

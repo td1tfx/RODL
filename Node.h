@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <queue>
+#include <iostream>
 #include "Config.h"
 #include "package.h"
 #include <time.h>
@@ -29,17 +30,21 @@ private:
 	bool outerNode;
 	pair<int, int> guid;
 	int id;
-	std::queue<Package>* qServe;
+	std::queue<Package*>* qServe;
+	std::queue<Package*>* qFinished;
 	float serveTime;
 	int packageCount;
+	int paGenerateRate;
 	d_matrix* routingMatrix;
 	d_matrix* shortRouting;
+	float nodeTime;
+	float perTransDelay;
 
 public:
 	Node();
 	~Node();
-	void inComingPackage(Package package);
-	void outPutPackage(Package pacage);
+	//void inComingPackage(Package package);
+	//void outPutPackage(Package pacage);
 	bool isOuterNode();
 	void setId(int a, int b);
 	int getId() {
@@ -60,6 +65,12 @@ public:
 	int getPackageNum() {
 		return qServe->size();
 	}
+	int getNodeTime() {
+		return nodeTime;
+	}
+	float getPerTransDelay() {
+		return perTransDelay;
+	};
 
 	d_matrix*& getRoutingMatrix() {
 		return routingMatrix;
@@ -68,7 +79,17 @@ public:
 		return shortRouting;
 	}
 
+	bool isQueueEmpty() {
+		return qServe->empty();
+	}
+
+	int getNextNode(int dest) {
+		return shortRouting->getData(dest, 0);
+	}
 	void generatePackage();
 	void initialPackage();
+	Package* outPackage();
+	void inPackage(Package* in_package);
+	void generatePaPerRound();
 };
 

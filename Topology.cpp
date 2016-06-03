@@ -12,6 +12,9 @@ Topology::~Topology()
 	if (m_nodes) {
 		delete m_nodes;
 	}
+	if (m_outerNodes) {
+		delete m_outerNodes;
+	}
 }
 
 bool Topology::initGrid() {
@@ -44,6 +47,7 @@ bool Topology::initGrid() {
 void Topology::initGraph() {
 	if (initGrid()) {
 		conGraph = new Graph;
+		cuTime = 0;
 		createNeighborGraph();
 	}
 }
@@ -64,14 +68,21 @@ void Topology::createNeighborGraph() {
 					Edge ed;
 					ed = (add_edge((*i)->getId(), (*j)->getId(), *conGraph)).first;
 					edges_index[ed] = linkEdge;
-					edges_weight[ed] = (*j)->getPackageNum();
-					cout << linkEdge << "; " << (*i)->getPos().first << "," << (*i)->getPos().second << 
-						"; "<< (*j)->getPos().first << "," << (*j)->getPos().second << ", weight=" << (*j)->getPackageNum() << endl;
+					edges_weight[ed] = (*j)->getPackageNum() + 1;
+					//cout << linkEdge << "; " << (*i)->getPos().first << "," << (*i)->getPos().second << 
+					//"; "<< (*j)->getPos().first << "," << (*j)->getPos().second << ", weight=" << (*j)->getPackageNum() << endl;
 					
 				}
 			}
 		}
 	}
+}
+
+void Topology::updateNeighborGraph() {
+	//std::cout << "edges(g) = ";
+	edge_iter ei, ei_end;
+	for (tie(ei, ei_end) = edges(*conGraph); ei != ei_end; ei++)
+		edges_weight[*ei] = m_nodes->at(target(*ei, *conGraph))->getPackageNum() + 1;
 }
 
 
@@ -94,7 +105,8 @@ bool Topology::getShortestPath(int destId) {
 		}
 		else {
 			if (distMap.at((*i)->getId()) == NULL) {
-				cout << "error: distMap = NULL" << endl;
+				
+				cout << "error!! Node=" << (*i)->getId() << "distMap = NULL, packageNum =" << (*i)->getPackageNum() << endl;
 				return false;
 			}
 			else {
@@ -119,6 +131,8 @@ bool Topology::getShortestPath(int destId) {
 }
 
 void Topology::getAllShortestPath() {
+
+	updateNeighborGraph();
 	vector<Node*>::iterator i;
 	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
 		if (getShortestPath((*i)->getId())) {
@@ -128,6 +142,27 @@ void Topology::getAllShortestPath() {
 
 }
 
+void Topology::runOneRound(){
+	vector<Node*>::iterator i;
+	for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
+		(*i)->generatePaPerRound();
+		if(!(*i)->isQueueEmpty()){
+			Package* t_package = (*i)->outPackage();
+			int t_dest = t_package->getDestination();
+			int t_nextNodeId = (*i)->getNextNode(t_dest);
+			Node* j = m_nodes->at(t_nextNodeId);
+			j->inPackage(t_package);
+			cuTime = (*i)->getNodeTime();
+		}
+	}
+}
+
+void Topology::runRounds(int num) {
+	for (int i = 0; i < num; i++) {
+		runOneRound();
+	}
+	cout << "run round:" << num << " finisid!" << endl;
+}
 
 float Topology::getTwoNodesDistance(int p1, int p2) {
 
