@@ -17,6 +17,7 @@ private:
 	vector<Node*>* m_nodes;
 	vector<Node*>* m_outerNodes;
 	float cuTime;
+	int maxPackageNum;
 
 	void createNeighborGraph();
 	void updateNeighborGraph();
@@ -37,5 +38,9 @@ public:
 	float getCuTime() {
 		return cuTime;
 	}
+
+	void saveData(bool clean);
+	void readData(const char* filename);
+
 };
 

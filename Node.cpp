@@ -11,7 +11,7 @@ Node::Node()
 	guid.first = -1;
 	guid.second = -1;
 	paGenerateRate = 0;
-	nodeTime = 0;
+	nodeTime = 0;	
 	float t_pSize = Config::getInstance()->getPackageSize();
 	float t_bWidth = Config::getInstance()->getBandwidth();
 	perTransDelay = t_pSize / t_bWidth;
@@ -121,4 +121,56 @@ void Node::inPackage(Package* in_package) {
 	else {
 		qServe->push(in_package);
 	}
+}
+
+void Node::saveNodeData(int maxOuterNum, double* inData, bool clean)
+{
+	char t_name[10];
+	sprintf(t_name, "%d", id);
+	char filename[30];
+	sprintf(filename, "%s %s %s","data/node", t_name, ".txt");
+
+	FILE *fout = stdout;
+	if (filename)
+		if (clean) {
+			fout = fopen(filename, "w+t");
+			fprintf(fout, "\nodeNum:");
+			fprintf(fout, "%d\n", id);
+			fprintf(fout, "---------------------------------------\n");
+		}
+		else {
+			fout = fopen(filename, "a+t");
+		}
+
+		d_matrix* t_dataMatrix = routingMatrix;
+
+		int t_inputCount = maxOuterNum;
+		int t_outputCount = t_dataMatrix->getCol()*t_dataMatrix->getCol();
+
+
+		double* outData = new double(t_outputCount);
+		t_dataMatrix->memcpyDataOut(outData, t_outputCount);
+
+		for (int i = 0; i < t_inputCount; i++)
+		{
+			fprintf(fout, "%d", inData[i]);
+		}
+		fprintf(fout, "toOut:");
+		for (int i = 0; i < t_outputCount; i++)
+		{
+			fprintf(fout, "%d", outData[i]);
+		}
+		fprintf(fout, "\n");
+		if (filename)
+			fclose(fout);
+		//delete[] inData;
+		//delete[] outData;
+}
+
+string Node::toString(int a)
+{
+	char jF[32];
+	sprintf(jF, "%d", a);
+	string jFirst = jF;
+	return jFirst;
 }

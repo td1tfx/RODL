@@ -5,6 +5,7 @@
 #include "Config.h"
 #include "package.h"
 #include <time.h>
+#include "libconvert.h"
 #include "boost/graph/adjacency_list.hpp"
 #include "boost/graph/graph_traits.hpp"
 #include "boost/graph/edge_list.hpp"
@@ -62,6 +63,7 @@ public:
 		pos.first = x;
 		pos.second = y;
 	}
+
 	int getPackageNum() {
 		return qServe->size();
 	}
@@ -91,5 +93,8 @@ public:
 	Package* outPackage();
 	void inPackage(Package* in_package);
 	void generatePaPerRound();
+	void saveNodeData(int maxOuterNum, double* inData, bool clean = false);
+	string toString(int a);
+	
 };
 

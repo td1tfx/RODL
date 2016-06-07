@@ -81,8 +81,14 @@ void Topology::createNeighborGraph() {
 void Topology::updateNeighborGraph() {
 	//std::cout << "edges(g) = ";
 	edge_iter ei, ei_end;
-	for (tie(ei, ei_end) = edges(*conGraph); ei != ei_end; ei++)
-		edges_weight[*ei] = m_nodes->at(target(*ei, *conGraph))->getPackageNum() + 1;
+	int weight;
+	for (tie(ei, ei_end) = edges(*conGraph); ei != ei_end; ei++){
+		weight = m_nodes->at(target(*ei, *conGraph))->getPackageNum();
+		if (weight > maxPackageNum) {
+			maxPackageNum = weight;
+		}
+		edges_weight[*ei] = weight + 1;
+	}
 }
 
 
@@ -181,6 +187,57 @@ float Topology::getTwoNodesDistance(Node &p1, Node &p2) {
 	float distance = sqrt(pow(posP2.first - posP1.first, 2) + pow(posP2.second - posP1.second, 2));
 	return distance;
 }
+
+
+void Topology::saveData(bool clean = false) {
+	vector<Node*>::iterator i;	
+	int t_inputCount = m_outerNodes->size();
+	double* inData = new double(t_inputCount);
+	for (int i = 0; i < t_inputCount; i++) {
+		double pkNum = m_outerNodes->at(i)->getPackageNum() / 1.00;
+		double a = pkNum / maxPackageNum;
+		inData[i] = a;
+	}
+	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
+		(*i)->saveNodeData(t_inputCount, inData, clean);
+		int t_id = (*i)->getId();
+		//cout << "node:" << t_id << "-data saved!" << endl;
+	}
+}
+
+
+void Topology::readData(const char* filename) {
+	int mark = 3;
+	//数据格式：前两个是输入变量数和输出变量数，之后依次是每组的输入和输出，是否有回车不重要
+	std::string str = readStringFromFile(filename) + "\n";
+	if (str == "")
+		return;
+	std::vector<double> v;
+	int n = findNumbers(str, v);
+	int t_inputNodeCount = int(v[0]);
+	int t_outputNodeCount = int(v[1]);
+
+	int _train_groupCount = (n - mark) / (t_inputNodeCount + t_outputNodeCount);
+	double* _train_inputData = new double[t_inputNodeCount * _train_groupCount];
+	double* _train_expectData = new double[t_outputNodeCount * _train_groupCount];
+
+	//写法太难看了
+	int k = mark, k1 = 0, k2 = 0;
+
+	for (int i_data = 1; i_data <= _train_groupCount; i_data++)
+	{
+	for (int i = 1; i <= t_inputNodeCount; i++)
+	{
+		_train_inputData[k1++] = v[k++];
+	}
+	for (int i = 1; i <= t_outputNodeCount; i++)
+	{
+		_train_expectData[k2++] = v[k++];
+	}
+	}
+	//测试用
+}
+
 
 string Topology::toString(int a)
 {

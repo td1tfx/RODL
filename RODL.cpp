@@ -14,8 +14,10 @@ int main(int argc, char* argv[])
 	Topology topology;
 	topology.initGraph();
 	topology.getAllShortestPath();
+	topology.saveData(true);
 	topology.runRounds(100);
 	topology.getAllShortestPath();
+	topology.saveData(false);
 
 	cout << "finalTime="<< topology.getCuTime() << endl;
 
