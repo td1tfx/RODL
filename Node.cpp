@@ -22,6 +22,8 @@ Node::Node()
 	//shortPath = new vector<int>();
 	shortRouting = new d_matrix(maxRow, maxColumn);
 	shortRouting->initData(-1);
+	t_outputCount = routingMatrix->getCol()*routingMatrix->getCol();
+	outData = new double[t_outputCount];
 }
 
 
@@ -145,10 +147,8 @@ void Node::saveNodeData(int maxOuterNum, double* inData, bool clean)
 		d_matrix* t_dataMatrix = routingMatrix;
 
 		int t_inputCount = maxOuterNum;
-		int t_outputCount = t_dataMatrix->getCol()*t_dataMatrix->getCol();
 
 
-		double* outData = new double(t_outputCount);
 		t_dataMatrix->memcpyDataOut(outData, t_outputCount);
 
 		for (int i = 0; i < t_inputCount; i++)
@@ -163,7 +163,6 @@ void Node::saveNodeData(int maxOuterNum, double* inData, bool clean)
 		fprintf(fout, "\n");
 		if (filename)
 			fclose(fout);
-		//delete[] inData;
 		//delete[] outData;
 }
 

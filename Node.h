@@ -40,6 +40,8 @@ private:
 	d_matrix* shortRouting;
 	float nodeTime;
 	float perTransDelay;
+	double* outData;
+	int t_outputCount;
 
 public:
 	Node();

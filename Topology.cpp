@@ -38,6 +38,8 @@ bool Topology::initGrid() {
 		}
 	}
 	if (m_nodes->begin() != m_nodes->end()) {
+		inData = new double[m_outerNodes->size()];
+		//memset(inData, 0, m_outerNodes->size() * sizeof(inData));
 		return true;
 	}
 	else return false;
@@ -192,9 +194,8 @@ float Topology::getTwoNodesDistance(Node &p1, Node &p2) {
 void Topology::saveData(bool clean = false) {
 	vector<Node*>::iterator i;	
 	int t_inputCount = m_outerNodes->size();
-	double* inData = new double(t_inputCount);
 	for (int i = 0; i < t_inputCount; i++) {
-		double pkNum = m_outerNodes->at(i)->getPackageNum() / 1.00;
+		double pkNum = m_outerNodes->at(i)->getPackageNum();
 		double a = pkNum / maxPackageNum;
 		inData[i] = a;
 	}

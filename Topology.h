@@ -18,6 +18,7 @@ private:
 	vector<Node*>* m_outerNodes;
 	float cuTime;
 	int maxPackageNum;
+	double* inData;
 
 	void createNeighborGraph();
 	void updateNeighborGraph();
