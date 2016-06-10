@@ -12,6 +12,7 @@ Node::Node()
 	guid.second = -1;
 	paGenerateRate = 0;
 	nodeTime = 0;	
+	cuRound = 0;
 	float t_pSize = Config::getInstance()->getPackageSize();
 	float t_bWidth = Config::getInstance()->getBandwidth();
 	perTransDelay = t_pSize / t_bWidth;
@@ -24,6 +25,7 @@ Node::Node()
 	shortRouting->initData(-1);
 	t_outputCount = routingMatrix->getCol()*routingMatrix->getCol();
 	outData = new double[t_outputCount];
+	memset(outData, 0, t_outputCount * sizeof(outData));
 }
 
 
@@ -59,7 +61,7 @@ void Node::setId(int a, int b) {
 	id = a * Config::getInstance()->getMaxColumn() + b;
 }
 
-void Node::initialPackage() {
+void Node::initialPackage(){
 	if (guid.first == 0 || guid.first == Config::getInstance()->getMaxRow() - 1 
 		|| guid.second == 0 || guid.second == Config::getInstance()->getMaxColumn()-1) {
 		outerNode = true;
@@ -75,16 +77,17 @@ void Node::initialPackage() {
 
 }
 
-void Node::generatePaPerRound() {
-	int ge_random = rand() % Config::getInstance()->getMaxGenerateRate();
-	if (ge_random < paGenerateRate * perTransDelay) {
-		generatePackage();
+void Node::generatePaPerRound(vector<Node*>* outerNodes) {
+	float threshold = 1 / (float)Config::getInstance()->getMaxGenerateRate();
+	float ge_random = (rand() % 1000) / 1000.00;
+	if (ge_random < threshold) {
+		generatePackage(outerNodes);
 	}
 	nodeTime = nodeTime + perTransDelay;
 }
 
 void Node::generatePackage() {
-	int pid = id * 10000 + packageCount + 1;
+	int pid = id * Config::getInstance()->gerMaxPacNumPerNode() + packageCount + 1;
 	Package *m_package = new Package(pid, nodeTime);
 	int dest = id;
 	while (dest == id) {
@@ -105,8 +108,22 @@ void Node::generatePackage() {
 		}
 	}
 	m_package->setDestination(dest);
+	m_package->setGenerateTime(nodeTime);
 	qServe->push(m_package);
-	packageCount++;		
+	packageCount++;
+}
+
+void Node::generatePackage(vector<Node*>* outerNodes) {
+	int pid = id * Config::getInstance()->gerMaxPacNumPerNode() + packageCount + 1;
+	Package *m_package = new Package(pid, nodeTime);
+	int dest = id;
+	while (dest == id) {
+		dest = outerNodes->at(rand() % outerNodes->size())->getId();
+	}
+	m_package->setDestination(dest);
+	m_package->setGenerateTime(nodeTime);
+	qServe->push(m_package);
+	packageCount++;
 }
 
 Package* Node::outPackage() {
@@ -116,8 +133,12 @@ Package* Node::outPackage() {
 }
 
 void Node::inPackage(Package* in_package) {
+	in_package->getHop()++;
 	if (in_package->getDestination() == id) {
-		in_package->setTerminalTime(nodeTime);
+		if (in_package->getGenerateTime() == nodeTime) {	//this is to avoid the same round
+			in_package->setTerminalTime(nodeTime + perTransDelay);
+		}
+		in_package->setTerminalTime(nodeTime);		
 		qFinished->push(in_package);
 	}
 	else {
@@ -125,45 +146,110 @@ void Node::inPackage(Package* in_package) {
 	}
 }
 
-void Node::saveNodeData(int maxOuterNum, double* inData, bool clean)
+void Node::saveNodeData(const char* name, int maxOuterNum, double* inData, bool clean)
 {
-	char t_name[10];
-	sprintf(t_name, "%d", id);
 	char filename[30];
-	sprintf(filename, "%s %s %s","data/node", t_name, ".txt");
-
+	sprintf(filename, "%s%d%s",name, id, ".txt");
+	int t_inputCount = maxOuterNum;
 	FILE *fout = stdout;
 	if (filename)
 		if (clean) {
 			fout = fopen(filename, "w+t");
-			fprintf(fout, "\nodeNum:");
-			fprintf(fout, "%d\n", id);
+			fprintf(fout, "input:");
+			fprintf(fout, "%d", t_inputCount);
+			fprintf(fout, "\t");
+			fprintf(fout, "output:");
+			fprintf(fout, "%d", t_outputCount);
+			fprintf(fout, "\t");
+			fprintf(fout, "testCount:");
+			fprintf(fout, "%d", 0);
 			fprintf(fout, "---------------------------------------\n");
 		}
 		else {
 			fout = fopen(filename, "a+t");
-		}
+		}		
 
-		d_matrix* t_dataMatrix = routingMatrix;
-
-		int t_inputCount = maxOuterNum;
-
-
-		t_dataMatrix->memcpyDataOut(outData, t_outputCount);
+		//routingMatrix->memcpyDataOut(outData, t_outputCount * sizeof(outData));
 
 		for (int i = 0; i < t_inputCount; i++)
 		{
-			fprintf(fout, "%d", inData[i]);
+			fprintf(fout, "%1.2f", inData[i]);
+			fprintf(fout, "\t"); 
 		}
 		fprintf(fout, "toOut:");
 		for (int i = 0; i < t_outputCount; i++)
 		{
-			fprintf(fout, "%d", outData[i]);
+			fprintf(fout, "%1.2f", routingMatrix->getData(i));
+			fprintf(fout, "\t");
 		}
 		fprintf(fout, "\n");
 		if (filename)
 			fclose(fout);
 		//delete[] outData;
+}
+
+void Node::calculateDelay()
+{
+	char delayFilename[50];
+	sprintf(delayFilename, "%s%d%s", "../test/delayOfDestination", id, ".txt");
+	FILE *fout = stdout;
+	if (delayFilename)
+		fout = fopen(delayFilename, "w+t");
+		fprintf(fout, "---------------------------------------\n");
+
+		//routingMatrix->memcpyDataOut(outData, t_outputCount * sizeof(outData));
+		fprintf(fout, "id");
+		fprintf(fout, "\t");
+		fprintf(fout, "initNode");
+		fprintf(fout, "\t");
+		fprintf(fout, "hop");
+		fprintf(fout, "\t");
+		fprintf(fout, "generateTime");
+		fprintf(fout, "\t");
+		fprintf(fout, "totalDeley");
+		fprintf(fout, "\t");
+		fprintf(fout, "oneHopDeley");
+		fprintf(fout, "\n");
+		int t_pac = 0;
+		float allDelay = 0;
+		float allOnehopDelay = 0;
+		Package* pac;
+		while (!qFinished->empty())
+		{
+			pac = qFinished->front();
+			t_pac++;
+			allDelay = allDelay + pac->getDelay();
+			float t_oneDelay = pac->getDelay() / pac->getHop();
+			allOnehopDelay = allOnehopDelay + t_oneDelay;
+			int t_nodeNum = floor(pac->getId() / Config::getInstance()->gerMaxPacNumPerNode());
+			fprintf(fout, "%d", pac->getId());
+			fprintf(fout, "\t");
+			fprintf(fout, "%d", t_nodeNum);
+			fprintf(fout, "\t");
+			fprintf(fout, "%d", pac->getHop());
+			fprintf(fout, "\t");
+			fprintf(fout, "%d", pac->getGenerateTime());
+			fprintf(fout, "\t");
+			fprintf(fout, "%1.2f", pac->getDelay());
+			fprintf(fout, "\t");
+			fprintf(fout, "%1.2f", t_oneDelay);
+			fprintf(fout, "\n");
+			qFinished->pop();			
+		}
+		pac = nullptr;
+		float averageDelay = allDelay / t_pac;
+		float averageOnehopDelay = allOnehopDelay / t_pac;
+		fprintf(fout, "total package number:");
+		fprintf(fout, "%d", t_pac);
+		fprintf(fout, "\n");
+		fprintf(fout, "average delay:");
+		fprintf(fout, "%1.2f", averageDelay);
+		fprintf(fout, "\n");
+		fprintf(fout, "average one-hop delay:");
+		fprintf(fout, "%1.2f", averageOnehopDelay);
+		fprintf(fout, "\n");
+		if (delayFilename)
+			fclose(fout);
 }
 
 string Node::toString(int a)

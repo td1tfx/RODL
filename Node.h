@@ -31,6 +31,7 @@ private:
 	bool outerNode;
 	pair<int, int> guid;
 	int id;
+	int cuRound;
 	std::queue<Package*>* qServe;
 	std::queue<Package*>* qFinished;
 	float serveTime;
@@ -91,11 +92,13 @@ public:
 		return shortRouting->getData(dest, 0);
 	}
 	void generatePackage();
+	void generatePackage(vector<Node*>* outerNodes);
 	void initialPackage();
 	Package* outPackage();
 	void inPackage(Package* in_package);
-	void generatePaPerRound();
-	void saveNodeData(int maxOuterNum, double* inData, bool clean = false);
+	void generatePaPerRound(vector<Node*>* outerNodes);
+	void saveNodeData(const char* name, int maxOuterNum, double* inData, bool clean = false);
+	void calculateDelay();
 	string toString(int a);
 	
 };

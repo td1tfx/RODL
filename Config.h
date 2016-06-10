@@ -12,6 +12,10 @@ private:
 	int maxRow;
 	int maxColumn;
 	int bandwidth;
+	int maxPacNumPerNode;
+	int round;
+	int testRound;
+
 public:
 	
 	static Config* getInstance() {
@@ -38,6 +42,17 @@ public:
 
 	int getMaxGenerateRate() {
 		return maxGenerateRate;
+	}
+
+	int gerMaxPacNumPerNode() {
+		return maxPacNumPerNode;
+	}
+
+	int getRound() {
+		return round;
+	}
+	int getTestRound() {
+		return testRound;
 	}
 	//void init();
 };

@@ -39,7 +39,7 @@ bool Topology::initGrid() {
 	}
 	if (m_nodes->begin() != m_nodes->end()) {
 		inData = new double[m_outerNodes->size()];
-		//memset(inData, 0, m_outerNodes->size() * sizeof(inData));
+		memset(inData, 0, m_outerNodes->size() * sizeof(inData));
 		return true;
 	}
 	else return false;
@@ -129,9 +129,7 @@ bool Topology::getShortestPath(int destId) {
 					linkId = linkId + "->" + toString(p);
 					num++;
 				} 				
-				//spLink = linkEdges->at(linkId);
-				//miMetric[(*i)->getId()] = ;
-				cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << linkId << endl;
+				//cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << linkId << endl;
 			}
 		}
 	}
@@ -153,7 +151,7 @@ void Topology::getAllShortestPath() {
 void Topology::runOneRound(){
 	vector<Node*>::iterator i;
 	for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
-		(*i)->generatePaPerRound();
+		(*i)->generatePaPerRound(m_outerNodes);
 		if(!(*i)->isQueueEmpty()){
 			Package* t_package = (*i)->outPackage();
 			int t_dest = t_package->getDestination();
@@ -169,7 +167,7 @@ void Topology::runRounds(int num) {
 	for (int i = 0; i < num; i++) {
 		runOneRound();
 	}
-	cout << "run round:" << num << " finisid!" << endl;
+	//cout << "run round:" << num << " finisid!" << endl;
 }
 
 float Topology::getTwoNodesDistance(int p1, int p2) {
@@ -191,7 +189,7 @@ float Topology::getTwoNodesDistance(Node &p1, Node &p2) {
 }
 
 
-void Topology::saveData(bool clean = false) {
+void Topology::saveData(bool clean = false, const char* filename = "node") {
 	vector<Node*>::iterator i;	
 	int t_inputCount = m_outerNodes->size();
 	for (int i = 0; i < t_inputCount; i++) {
@@ -200,16 +198,21 @@ void Topology::saveData(bool clean = false) {
 		inData[i] = a;
 	}
 	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
-		(*i)->saveNodeData(t_inputCount, inData, clean);
+		(*i)->saveNodeData(filename, t_inputCount, inData, clean);
 		int t_id = (*i)->getId();
 		//cout << "node:" << t_id << "-data saved!" << endl;
 	}
 }
 
+void Topology::saveDelay() {
+	vector<Node*>::iterator i;
+	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
+		(*i)->calculateDelay();
+	}
+}
 
 void Topology::readData(const char* filename) {
 	int mark = 3;
-	//数据格式：前两个是输入变量数和输出变量数，之后依次是每组的输入和输出，是否有回车不重要
 	std::string str = readStringFromFile(filename) + "\n";
 	if (str == "")
 		return;
@@ -222,7 +225,6 @@ void Topology::readData(const char* filename) {
 	double* _train_inputData = new double[t_inputNodeCount * _train_groupCount];
 	double* _train_expectData = new double[t_outputNodeCount * _train_groupCount];
 
-	//写法太难看了
 	int k = mark, k1 = 0, k2 = 0;
 
 	for (int i_data = 1; i_data <= _train_groupCount; i_data++)
@@ -236,7 +238,6 @@ void Topology::readData(const char* filename) {
 		_train_expectData[k2++] = v[k++];
 	}
 	}
-	//测试用
 }
 
 

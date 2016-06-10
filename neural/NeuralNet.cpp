@@ -222,6 +222,40 @@ void NeuralNet::readData(const char* filename)
 
 }
 
+void NeuralNet::readTestData(const char* filename)
+{
+	int mark = 3;
+	//数据格式：前两个是输入变量数和输出变量数，之后依次是每组的输入和输出，是否有回车不重要
+	std::string str = readStringFromFile(filename) + "\n";
+	if (str == "")
+		return;
+	std::vector<double> v;
+	int n = findNumbers(str, v);
+	InputTestNodeCount = int(v[0]);
+	OutputTestNodeCount = int(v[1]);
+
+	_test_groupCount = (n - mark) / (InputTestNodeCount + OutputTestNodeCount);
+	_test_inputData = new double[InputTestNodeCount * _test_groupCount];
+	_test_expectData = new double[OutputTestNodeCount * _test_groupCount];
+
+	//写法太难看了
+	int k = mark, k1 = 0, k2 = 0;
+
+	for (int i_data = 1; i_data <= _test_groupCount; i_data++)
+	{
+		for (int i = 1; i <= InputTestNodeCount; i++)
+		{
+			_test_inputData[k1++] = v[k++];
+		}
+		for (int i = 1; i <= OutputTestNodeCount; i++)
+		{
+			_test_expectData[k2++] = v[k++];
+		}
+	}
+	//测试用
+
+}
+
 void NeuralNet::resetGroupCount(int n)
 {
 	for (auto l : Layers)
@@ -372,7 +406,10 @@ void NeuralNet::run()
 
 	setLearnSpeed(_option.LearnSpeed);
 	setRegular(_option.Regular);
-	//net->selectTest();
+	{
+		readTestData(_option.TestFile.c_str());
+	}
+	//selectTest();
 	train(int(_option.TrainTimes), int(_option.OutputInterval), _option.Tol, _option.Dtol);
 	test();
 	outputBondWeight(_option.SaveFile.c_str());

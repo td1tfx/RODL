@@ -4,10 +4,12 @@
 
 struct Option
 {
+
 #define OPTION_PARAMETERS \
 OPTION_STRING(DataFile, "p.txt");\
 OPTION_STRING(LoadFile, "save.txt");\
 OPTION_STRING(SaveFile, "save.txt");\
+OPTION_STRING(TestFile, "testFile.txt");\
 \
 OPTION_INT(UseMINST, 0);\
 OPTION_INT(LoadNet, 0);\
@@ -26,6 +28,7 @@ OPTION_DOUBLE(LearnSpeed, 0.5);\
 OPTION_DOUBLE(Regular, 0.01);\
 OPTION_DOUBLE(Tol, 1e-3);\
 OPTION_DOUBLE(Dtol, 0);
+
 
 #define OPTION_STRING(a, b) std::string a = (b)
 #define OPTION_INT(a, b) int a = (b)

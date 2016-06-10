@@ -45,9 +45,6 @@
     <ClInclude Include="neural\lib\cblas.h">
       <Filter>neural\lib</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h">
-      <Filter>neural\lib</Filter>
-    </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>neural\lib</Filter>
     </ClInclude>
@@ -77,6 +74,9 @@
     </ClInclude>
     <ClInclude Include="neural\Option.h">
       <Filter>neural</Filter>
+    </ClInclude>
+    <ClInclude Include="neural\lib\stdafx.h">
+      <Filter>neural\lib</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

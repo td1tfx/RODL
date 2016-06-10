@@ -40,7 +40,8 @@ public:
 		return cuTime;
 	}
 
-	void saveData(bool clean);
+	void saveData(bool clean, const char* filename);
+	void saveDelay();
 	void readData(const char* filename);
 
 };

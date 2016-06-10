@@ -8,18 +8,14 @@
 #include "Timer.h"
 #include "Topology.h"
 
+void getTrainData();
+void getTestData();
+
 int main(int argc, char* argv[])
 {
 	srand(time(NULL));
-	Topology topology;
-	topology.initGraph();
-	topology.getAllShortestPath();
-	topology.saveData(true);
-	topology.runRounds(100);
-	topology.getAllShortestPath();
-	topology.saveData(false);
-
-	cout << "finalTime="<< topology.getCuTime() << endl;
+	//getTrainData();
+	//getTestData();
 
 	NeuralNet net;
 	Timer t;
@@ -32,7 +28,7 @@ int main(int argc, char* argv[])
 		net.loadOptoin("learnConfig.ini");
 
 	t.start();
-	//net.run();
+	net.run();
 	t.stop();
 
 	fprintf(stderr, "Run neural net end. Time is %lf s.\n", t.getElapsedTime());
@@ -43,4 +39,41 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
+void getTestData() {
 
+	char* filename = "../test/node";
+	Topology topology;
+	topology.initGraph();
+	topology.getAllShortestPath();
+	topology.saveData(true, filename);
+	int cuRound = 0;
+	int maxRound = Config::getInstance()->getTestRound();
+	while (cuRound < maxRound) {
+		topology.runRounds(10);
+		topology.getAllShortestPath();
+		topology.saveData(false, filename);
+		cuRound++;
+	}
+	topology.saveDelay();
+
+	cout << "test finalTime=" << topology.getCuTime() << endl;
+}
+
+void getTrainData() {
+	char* filename = "../data/node";
+	Topology topology;
+	topology.initGraph();
+	topology.getAllShortestPath();
+	topology.saveData(true, filename);
+	int cuRound = 0;
+	int maxRound = Config::getInstance()->getRound();
+	while (cuRound < maxRound) {
+		topology.runRounds(10);
+		topology.getAllShortestPath();
+		topology.saveData(false, filename);
+		cuRound++;
+	}
+	//topology.saveDelay();
+
+	cout << "train finalTime=" << topology.getCuTime() << endl;
+}

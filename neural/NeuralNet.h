@@ -59,6 +59,8 @@ public:
 
 	int InputNodeCount;
 	int OutputNodeCount;
+	int InputTestNodeCount;
+	int OutputTestNodeCount;
 
 	NeuralNetLearnMode LearnMode = Batch;
 	int MiniBatchCount = -1;
@@ -91,6 +93,7 @@ public:
 	double* _train_expectData = nullptr;
 	int _train_groupCount = 0;   //实际的数据量
 	void readData(const char* filename);
+	void readTestData(const char* filename);
 	void resetGroupCount(int n);
 
 	double* _test_inputData = nullptr;

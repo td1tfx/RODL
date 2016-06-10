@@ -6,11 +6,17 @@ Config* Config::m_config;
 
 Config::Config()
 {
-	packageSize = 512;
+	packageSize = 256;
 	maxColumn = 4;
 	maxRow = 4;
 	bandwidth = 1024;
-	maxGenerateRate = 4;
+	maxGenerateRate = 8;
+	round = 10000;
+	testRound = 100;
+	maxPacNumPerNode = round;
+	while (maxPacNumPerNode < round*maxGenerateRate) {
+		maxPacNumPerNode = maxPacNumPerNode * 10;
+	}	
 }
 
 

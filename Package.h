@@ -10,7 +10,7 @@ private:
 	float generateTime;
 	float terminalTime;
 	int destination;
-
+	int hop;
 
 public:
 	Package();
@@ -19,12 +19,27 @@ public:
 	void setDestination(int dest) {
 		destination = dest;
 	}
+	int getId() {
+		return id;
+	}
+
 	int getDestination() {
 		return destination;
 	}
+	int& getHop() {
+		return hop;
+	}
+	int getGenerateTime() {
+		return generateTime;
+	}
+
+	void setGenerateTime(int time) {
+		generateTime = time;
+	}
 
 	float getDelay() {
-		return terminalTime - generateTime;
+		delay = terminalTime - generateTime;
+		return delay;
 	}
 
 	void setTerminalTime(float time) {
