@@ -10,7 +10,7 @@ Config::Config()
 	maxColumn = 4;
 	maxRow = 4;
 	bandwidth = 1024;
-	maxGenerateRate = 8;
+	maxGenerateRate = 4;
 	round = 10000;
 	testRound = 100;
 	maxPacNumPerNode = round;

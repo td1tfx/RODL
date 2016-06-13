@@ -39,10 +39,11 @@ private:
 	int paGenerateRate;
 	d_matrix* routingMatrix;
 	d_matrix* shortRouting;
+	d_matrix* trainRouting;
 	float nodeTime;
 	float perTransDelay;
 	double* outData;
-	int t_outputCount;
+	int m_outputCount;
 
 public:
 	Node();
@@ -75,13 +76,20 @@ public:
 	}
 	float getPerTransDelay() {
 		return perTransDelay;
-	};
+	}
+	int getOutputCount() {
+		return m_outputCount;
+	}
 
 	d_matrix*& getRoutingMatrix() {
 		return routingMatrix;
 	}
-	d_matrix*& getParh() {
+	d_matrix*& getPath() {
 		return shortRouting;
+	}
+	
+	d_matrix*& getTrainPath() {
+		return trainRouting;
 	}
 
 	bool isQueueEmpty() {
@@ -97,7 +105,7 @@ public:
 	Package* outPackage();
 	void inPackage(Package* in_package);
 	void generatePaPerRound(vector<Node*>* outerNodes);
-	void saveNodeData(const char* name, int maxOuterNum, double* inData, bool clean = false);
+	void saveNodeData(const char* name, int maxOuterNum, double* inData, bool clean, int dest);
 	void calculateDelay();
 	string toString(int a);
 	

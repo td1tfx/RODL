@@ -23,9 +23,11 @@ Node::Node()
 	//shortPath = new vector<int>();
 	shortRouting = new d_matrix(maxRow, maxColumn);
 	shortRouting->initData(-1);
-	t_outputCount = routingMatrix->getCol()*routingMatrix->getCol();
-	outData = new double[t_outputCount];
-	memset(outData, 0, t_outputCount * sizeof(outData));
+	trainRouting = new d_matrix(maxRow, maxColumn);
+	trainRouting->initData(-1);
+	m_outputCount = routingMatrix->getCol()*routingMatrix->getCol();
+	outData = new double[m_outputCount];
+	memset(outData, 0, m_outputCount * sizeof(outData));
 }
 
 
@@ -78,10 +80,12 @@ void Node::initialPackage(){
 }
 
 void Node::generatePaPerRound(vector<Node*>* outerNodes) {
-	float threshold = 1 / (float)Config::getInstance()->getMaxGenerateRate();
+	float gRatePerRound = (float)Config::getInstance()->getMaxGenerateRate()/ (Config::getInstance()->getBandwidth() / Config::getInstance()->getPackageSize());
+	float threshold = gRatePerRound;
 	float ge_random = (rand() % 1000) / 1000.00;
-	if (ge_random < threshold) {
+	while (ge_random < threshold) {
 		generatePackage(outerNodes);
+		ge_random = ge_random + 1;
 	}
 	nodeTime = nodeTime + perTransDelay;
 }
@@ -146,11 +150,18 @@ void Node::inPackage(Package* in_package) {
 	}
 }
 
-void Node::saveNodeData(const char* name, int maxOuterNum, double* inData, bool clean)
+void Node::saveNodeData(const char* name, int maxOuterNum, double* inData, bool clean, int dest = -1)
 {
 	char filename[30];
-	sprintf(filename, "%s%d%s",name, id, ".txt");
-	int t_inputCount = maxOuterNum;
+	int t_outputCount;
+	if (dest == -1) {
+		sprintf(filename, "%s%d%s", name, id, ".txt");
+		t_outputCount = m_outputCount;
+	}else{
+		sprintf(filename, "%s%d-%d%s",name, id, dest, ".txt");
+		t_outputCount = sqrt(m_outputCount);
+	}
+	int t_inputCount = maxOuterNum;	
 	FILE *fout = stdout;
 	if (filename)
 		if (clean) {
@@ -177,11 +188,17 @@ void Node::saveNodeData(const char* name, int maxOuterNum, double* inData, bool 
 			fprintf(fout, "\t"); 
 		}
 		fprintf(fout, "toOut:");
+		
 		for (int i = 0; i < t_outputCount; i++)
 		{
-			fprintf(fout, "%1.2f", routingMatrix->getData(i));
+			if (dest == -1) {
+				fprintf(fout, "%1.2f", routingMatrix->getData(i));
+			}
+			else {
+				fprintf(fout, "%1.2f", routingMatrix->getData(dest, i));
+			}
 			fprintf(fout, "\t");
-		}
+		}		
 		fprintf(fout, "\n");
 		if (filename)
 			fclose(fout);

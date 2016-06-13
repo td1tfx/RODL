@@ -389,8 +389,7 @@ void NeuralNet::loadOptoin(const char* filename)
 	_option.loadIni(filename);
 }
 
-void NeuralNet::run()
-{
+void NeuralNet::init() {
 	if (_option.UseMINST == 0)
 		readData(_option.DataFile.c_str());
 	else
@@ -406,10 +405,12 @@ void NeuralNet::run()
 
 	setLearnSpeed(_option.LearnSpeed);
 	setRegular(_option.Regular);
-	{
-		readTestData(_option.TestFile.c_str());
-	}
-	//selectTest();
+}
+
+void NeuralNet::run()
+{	
+	const char* file = _option.TestFile.c_str();
+	readTestData(file);
 	train(int(_option.TrainTimes), int(_option.OutputInterval), _option.Tol, _option.Dtol);
 	test();
 	outputBondWeight(_option.SaveFile.c_str());

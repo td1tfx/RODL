@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Node.h"
-
+#include "neural/NeuralNet.h"
+#include "Timer.h"
 
 using namespace std;
 
@@ -19,6 +20,7 @@ private:
 	float cuTime;
 	int maxPackageNum;
 	double* inData;
+	NeuralNet net;
 
 	void createNeighborGraph();
 	void updateNeighborGraph();
@@ -33,14 +35,19 @@ public:
 	void initGraph();
 	string toString(int a);
 	bool getShortestPath(int destId);
+	void getTrainedPath(int destId);
 	void getAllShortestPath();
+	void getAllTrainedPath();
 	void runOneRound();
 	void runRounds(int num);
+	void getOuterNodesLoad();
 	float getCuTime() {
 		return cuTime;
 	}
+	void initTrainNet(int argc, char* argv[]);
+	int trainNet();
 
-	void saveData(bool clean, const char* filename);
+	void saveData(bool clean, const char* filename, int dest);
 	void saveDelay();
 	void readData(const char* filename);
 

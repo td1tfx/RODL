@@ -112,7 +112,7 @@ public:
 
 	Option _option;
 	void loadOptoin(const char* filename);
-
+	void NeuralNet::init();
 	void run();
 
 	void selectTest();
