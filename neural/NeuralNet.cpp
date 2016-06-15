@@ -186,6 +186,11 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 	}
 }
 
+void NeuralNet::inTrainData(double* inData, int inputGroupCount) {
+	_train_groupCount = inputGroupCount;
+	_train_inputData = new double[InputNodeCount * _train_groupCount];
+	memcpy(_train_inputData, inData, sizeof(double)*InputNodeCount* _train_groupCount);
+}
 //读取数据
 //这里的处理可能不是很好
 void NeuralNet::readData(const char* filename)
@@ -390,10 +395,15 @@ void NeuralNet::loadOptoin(const char* filename)
 }
 
 void NeuralNet::init() {
+	const char* datafile = _option.DataFile.c_str();
+	const char* loadfile = _option.LoadFile.c_str();
+
 	if (_option.UseMINST == 0)
 		readData(_option.DataFile.c_str());
-	else
+	else if (_option.UseMINST == 0)
 		readMNIST();
+	else {	
+	}
 
 	if (_option.LoadNet == 0)
 		createByData(_option.Layer, _option.NodePerLayer);
@@ -407,13 +417,27 @@ void NeuralNet::init() {
 	setRegular(_option.Regular);
 }
 
+void NeuralNet::resetOption(int nodeId) {
+
+	std::string str1 = "save";
+	std::string str2 = "../data/node";
+	std::string str3 = ".txt";
+	std::string str4 = "../test/node";
+	_option.DataFile = str2 + toString(nodeId) + str3;
+	_option.LoadFile = str1 + toString(nodeId) + str3;
+	_option.SaveFile = str1 + toString(nodeId) + str3;
+	_option.TestFile = str4 + toString(nodeId) + str3;;
+	//_option.LoadNet = 1;
+	//_option.UseMINST = -1;
+}
+
 void NeuralNet::run()
 {	
 	const char* file = _option.TestFile.c_str();
-	readTestData(file);
+	//readTestData(file);
 	train(int(_option.TrainTimes), int(_option.OutputInterval), _option.Tol, _option.Dtol);
-	test();
-	outputBondWeight(_option.SaveFile.c_str());
+	//test();
+	//outputBondWeight(_option.SaveFile.c_str());
 }
 
 //这里拆一部分数据为测试数据，写法有hack性质
@@ -453,6 +477,13 @@ void NeuralNet::selectTest()
 	}
 	_train_groupCount -= _test_groupCount;
 	resetGroupCount(_train_groupCount);
+}
+
+double* NeuralNet::runOutput() {
+	resetGroupCount(_train_groupCount);
+	_train_outputData = new double[OutputNodeCount*_train_groupCount];
+	activeOutputValue(_train_inputData, _train_outputData, _train_groupCount);
+	return _train_outputData;
 }
 
 //输出拟合的结果和测试集的结果
@@ -503,4 +534,10 @@ void NeuralNet::printResult(int nodeCount, int groupCount, double* output, doubl
 	fprintf(stdout, "Error of max value position: %d, %5.2lf%%\n", int(n), n / groupCount * 100);
 }
 
-
+std::string NeuralNet::toString(int a)
+{
+	char jF[32];
+	sprintf(jF, "%d", a);
+	std::string jFirst = jF;
+	return jFirst;
+}

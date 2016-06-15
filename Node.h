@@ -11,6 +11,8 @@
 #include "boost/graph/edge_list.hpp"
 #include "boost/graph/dijkstra_shortest_paths.hpp"
 #include "neural/MatrixFunctions.h"
+#include "neural/NeuralNet.h"
+#include "Timer.h"
 
 using namespace std;
 using namespace boost;
@@ -22,6 +24,9 @@ typedef graph_traits<Graph>::edge_descriptor Edge;
 typedef graph_traits<Graph>::edge_iterator edge_iter;
 typedef graph_traits<Graph>::vertex_descriptor Vertex;
 typedef graph_traits<Graph>::vertex_iterator vertex_iter;
+typedef graph_traits<Graph>::out_edge_iterator out_edge_iter;
+typedef graph_traits<Graph>::adjacency_iterator adj_iter;
+
 
 class Node
 {
@@ -42,8 +47,10 @@ private:
 	d_matrix* trainRouting;
 	float nodeTime;
 	float perTransDelay;
+	double* inData;
 	double* outData;
 	int m_outputCount;
+	NeuralNet net;
 
 public:
 	Node();
@@ -61,6 +68,17 @@ public:
 
 	pair <float, float> getPos() {
 		return pos;
+	}
+	NeuralNet& getNet() {
+		return net;
+	}
+
+	double* getInData() {
+		return inData;
+	}
+
+	void setInData(double* indata, int size) {
+		memcpy(inData, indata, sizeof(double)*size);
 	}
 
 	void setPos(float x, float y) {
@@ -84,7 +102,7 @@ public:
 	d_matrix*& getRoutingMatrix() {
 		return routingMatrix;
 	}
-	d_matrix*& getPath() {
+	d_matrix*& getShortPath() {
 		return shortRouting;
 	}
 	
@@ -107,6 +125,8 @@ public:
 	void generatePaPerRound(vector<Node*>* outerNodes);
 	void saveNodeData(const char* name, int maxOuterNum, double* inData, bool clean, int dest);
 	void calculateDelay();
+	void getTrainedPath(int destId);
+	void initInData(int size);
 	string toString(int a);
 	
 };

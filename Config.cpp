@@ -11,7 +11,7 @@ Config::Config()
 	maxRow = 4;
 	bandwidth = 1024;
 	maxGenerateRate = 4;
-	round = 10000;
+	round = 1000;
 	testRound = 100;
 	maxPacNumPerNode = round;
 	while (maxPacNumPerNode < round*maxGenerateRate) {

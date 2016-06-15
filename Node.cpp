@@ -28,6 +28,7 @@ Node::Node()
 	m_outputCount = routingMatrix->getCol()*routingMatrix->getCol();
 	outData = new double[m_outputCount];
 	memset(outData, 0, m_outputCount * sizeof(outData));
+	inData = nullptr;
 }
 
 
@@ -56,6 +57,10 @@ void Node::outPutPackage(Package pacage) {
 
 }
 */
+void Node::initInData(int size) {
+	inData = new double[size];
+	memset(inData, 0, size * sizeof(outData));
+}
 
 void Node::setId(int a, int b) {
 	guid.first = a;
@@ -71,17 +76,17 @@ void Node::initialPackage(){
 	}
 	else {
 		outerNode = false;
-		paGenerateRate = 0;
+		//paGenerateRate = 0;
 	}
 	for (int i = 0; i < paGenerateRate; i++) {
-		generatePackage();
+		//generatePackage();
 	}		
 
 }
 
 void Node::generatePaPerRound(vector<Node*>* outerNodes) {
 	float gRatePerRound = (float)Config::getInstance()->getMaxGenerateRate()/ (Config::getInstance()->getBandwidth() / Config::getInstance()->getPackageSize());
-	float threshold = gRatePerRound;
+	float threshold = (rand()%200)/100.00*gRatePerRound;
 	float ge_random = (rand() % 1000) / 1000.00;
 	while (ge_random < threshold) {
 		generatePackage(outerNodes);
@@ -126,6 +131,11 @@ void Node::generatePackage(vector<Node*>* outerNodes) {
 	}
 	m_package->setDestination(dest);
 	m_package->setGenerateTime(nodeTime);
+	int size = Config::getInstance()->getMaxColumn()*Config::getInstance()->getMaxRow();
+	m_package->setPathSize(size);
+	for (int i = 0; i < size; i++) {
+		m_package->getPathData(i) = trainRouting->getData(dest, i);
+	}
 	qServe->push(m_package);
 	packageCount++;
 }
@@ -148,6 +158,10 @@ void Node::inPackage(Package* in_package) {
 	else {
 		qServe->push(in_package);
 	}
+}
+
+void Node::getTrainedPath(int destId) {
+
 }
 
 void Node::saveNodeData(const char* name, int maxOuterNum, double* inData, bool clean, int dest = -1)

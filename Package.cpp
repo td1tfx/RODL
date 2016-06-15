@@ -19,4 +19,7 @@ Package::Package(int id, float time)
 
 Package::~Package()
 {
+	if (path) {
+		delete[] path;
+	}
 }

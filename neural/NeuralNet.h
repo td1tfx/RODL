@@ -91,6 +91,7 @@ public:
 	//数据
 	double* _train_inputData = nullptr;
 	double* _train_expectData = nullptr;
+	double* _train_outputData = nullptr;
 	int _train_groupCount = 0;   //实际的数据量
 	void readData(const char* filename);
 	void readTestData(const char* filename);
@@ -112,11 +113,15 @@ public:
 
 	Option _option;
 	void loadOptoin(const char* filename);
-	void NeuralNet::init();
+	void init();
+	void resetOption(int nodeId);
 	void run();
+	void inTrainData(double* inData, int inputGroupCount);
+	double* runOutput();
 
 	void selectTest();
 	void test();
 	void printResult(int nodeCount, int groupCount, double* output, double* expect);
+	std::string toString(int a);
 };
 

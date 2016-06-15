@@ -122,7 +122,7 @@ bool Topology::getShortestPath(int destId) {
 				while (p != destId){
 					p = parent.at(p);
 					(*i)->getRoutingMatrix()->getData(destId, p) = 1;
-					(*i)->getPath()->getData(destId, num) = p;
+					(*i)->getShortPath()->getData(destId, num) = p;
 					linkId = linkId + "->" + toString(p);
 					num++;
 				} 
@@ -147,7 +147,7 @@ void Topology::getAllShortestPath() {
 	vector<Node*>::iterator i;
 	for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
 		(*i)->getRoutingMatrix()->initData(0);
-		(*i)->getPath()->initData(-1);
+		(*i)->getShortPath()->initData(-1);
 	}	
 	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
 		if (getShortestPath((*i)->getId())) {
@@ -160,64 +160,94 @@ void Topology::getAllShortestPath() {
 void Topology::getAllTrainedPath() {
 
 	vector<Node*>::iterator i;
-	for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
-		(*i)->getRoutingMatrix()->initData(0);
-		(*i)->getPath()->initData(-1);
-	}
 	getOuterNodesLoad();
+	totalPCount = 0;
+	wrongPCount = 0;
 	int inputGroupCount = 1;
-	net.resetGroupCount(inputGroupCount);
-	int OutputNodeCount = m_outerNodes->at(0)->getOutputCount();
-	auto t_output = new double[OutputNodeCount*inputGroupCount];
-	net.activeOutputValue(inData, t_output, inputGroupCount);
-	int size = sizeof(t_output) / sizeof(t_output[0]);
-	for (int j = 0; j < size; j++) {
-		if (t_output[j] > 0.5) {
-			t_output[j] = 1;
+	int outputNodeCount = m_outerNodes->at(0)->getOutputCount();
+	auto t_output = new double[outputNodeCount*inputGroupCount];
+	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
+		(*i)->getRoutingMatrix()->initData(0);
+		(*i)->getTrainPath()->initData(-1);
+		(*i)->getNet().resetGroupCount(inputGroupCount);
+		(*i)->getNet().InputNodeCount = m_outerNodes->size();
+		(*i)->getNet().OutputNodeCount = outputNodeCount;
+		//(*i)->getNet().setInputData(_train_inputData, InputNodeCount, 0);
+		//(*i)->getNet().setInputData((*i)->getInData(), m_outerNodes->size(), 0);
+		//(*i)->getNet().run();
+		(*i)->getNet().activeOutputValue((*i)->getInData(), t_output, inputGroupCount);
+		//cout << "node:" << (*i)->getId();
+		for (int j = 0; j < outputNodeCount; j++) {
+			if (t_output[j] > 0.5) {
+				t_output[j] = 1;
+			}
+			else {
+				t_output[j] = 0;
+			}
+			//cout << "-" << t_output[j];
 		}
-		else {
-			t_output[j] = 0;
-		}
+		//cout << endl;
+		(*i)->getRoutingMatrix()->memcpyDataIn(t_output, outputNodeCount);
 	}
-	for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
-		(*i)->getRoutingMatrix()->memcpyDataIn(t_output, size);
-	}
+	delete[] t_output;
 	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
 		getTrainedPath((*i)->getId());
 	}
-
-	delete[] t_output;
+	cout << "totalPCount:" << totalPCount << ";wrongPCount" << wrongPCount << endl;
 }
 
 void Topology::getTrainedPath(int destId) {
-	vector<Node*>::iterator i;
-	for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
-		if ((*i)->getId() == destId) {
+	pair<vertex_iter, vertex_iter> vp;
+	for (vp = vertices(*conGraph); vp.first != vp.second; ++vp.first) {
+		Node* t_node = m_nodes->at(node_index[*vp.first]);
+		if (node_index[*vp.first] == destId || !t_node->isOuterNode()) {
+			//j
 		}
 		else {
-			int p = (*i)->getId();
-			string linkId = toString(p);
+			int p = node_index[*vp.first];
+			Vertex pV = *vp.first;
+			int sourceNode = p;
+			string linkId = toString(sourceNode);
+			adj_iter ai, ai_end;
 			int num = 0;
-			edge_iter ei, ei_end;
-			for (tie(ei, ei_end) = edges(*conGraph); ei != ei_end; ei++) {
-				if (p == source(*ei, *conGraph)) {		
-					if ((*i)->getRoutingMatrix()->getData(destId, target(*ei, *conGraph)) == 1){
-						p = target(*ei, *conGraph);
-						(*i)->getTrainPath()->getData(destId,num) = p;
+			int count = 0;
+			while (p != destId) {
+				for (tie(ai, ai_end) = adjacent_vertices(pV, *conGraph); ai != ai_end; ++ai) {
+					int nextNode = node_index[*ai];
+					int isPath = t_node->getRoutingMatrix()->getData(destId, nextNode);
+					if (isPath == 1) {
+						p = node_index[*ai];
+						pV = *ai;
+						t_node->getTrainPath()->getData(destId, num) = p;
 						linkId = linkId + "->" + toString(p);
 						num++;
+						break;
 					}
+					else {}
+				}
+				count++;
+				if (count > m_nodes->size()) {
+					linkId = toString(sourceNode);
+					for (int i = 0; i < m_nodes->size(); i++) {
+						p = t_node->getShortPath()->getData(destId, i);
+						linkId = linkId + "->" + toString(p);
+						t_node->getTrainPath()->getData(destId, i) = p;
+						if (p == destId) { break; }
+					}
+					wrongPCount++;
 				}
 			}
-			cout << "node=" << (*i)->getId() << ";dest=" << destId << ";path=" << linkId << endl;
+			totalPCount++;
+			cout << "node=" << node_index[*vp.first] << ";dest=" << destId << ";path=" << linkId << endl;
 		}
 	}
 }
-
 void Topology::runOneRound(){
 	vector<Node*>::iterator i;
 	for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
-		(*i)->generatePaPerRound(m_outerNodes);
+		if((*i)->isOuterNode()){
+			(*i)->generatePaPerRound(m_outerNodes);
+		}
 		if(!(*i)->isQueueEmpty()){
 			Package* t_package = (*i)->outPackage();
 			int t_dest = t_package->getDestination();
@@ -229,9 +259,38 @@ void Topology::runOneRound(){
 	}
 }
 
+void Topology::runOneRoundWithTrain() {
+	vector<Node*>::iterator i;
+	for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
+		if ((*i)->isOuterNode()) {
+			(*i)->generatePaPerRound(m_outerNodes);
+		}
+		if (!(*i)->isQueueEmpty()) {
+			Package* t_package = (*i)->outPackage();
+			int t_dest = t_package->getDestination();
+			int t_nextNodeId = t_package->getNextNode();
+			int t_sourceNodeId = (*i)->getId();
+			if (t_nextNodeId<0 || t_nextNodeId>m_nodes->size() || getTwoNodesDistance((*i)->getId(), t_nextNodeId) > MAX_IR) {
+				t_nextNodeId = (*i)->getNextNode(t_dest);
+				cout << "traind path is wrong!" << endl;
+			}
+			Node* j = m_nodes->at(t_nextNodeId);
+			j->inPackage(t_package);
+			cuTime = (*i)->getNodeTime();
+		}
+	}
+}
+
 void Topology::runRounds(int num) {
 	for (int i = 0; i < num; i++) {
 		runOneRound();
+	}
+	//cout << "run round:" << num << " finisid!" << endl;
+}
+
+void Topology::runRoundsWithTrain(int num) {
+	for (int i = 0; i < num; i++) {
+		runOneRoundWithTrain();
 	}
 	//cout << "run round:" << num << " finisid!" << endl;
 }
@@ -268,6 +327,12 @@ void Topology::getOuterNodesLoad() {
 		double pkNum = m_outerNodes->at(i)->getPackageNum();
 		double a = pkNum / maxPackageNum;
 		inData[i] = a;
+	}
+	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
+		if ((*i)->getInData() == nullptr) {
+			(*i)->initInData(t_inputCount);
+		}
+		(*i)->setInData(inData, t_inputCount);
 	}
 }
 
@@ -319,24 +384,30 @@ void Topology::readData(const char* filename) {
 }
 
 void Topology::initTrainNet(int argc, char* argv[]) {
-
-	if (argc > 1) {
-		net.loadOptoin(argv[1]);
+	vector<Node*>::iterator i;
+	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
+		if (argc > 1) {
+			(*i)->getNet().loadOptoin(argv[1]);
+		}
+		else {
+			(*i)->getNet().loadOptoin("learnConfig.ini");
+		}
+		(*i)->getNet().resetOption((*i)->getId());
+		(*i)->getNet().init();
+		cout << "node:" << (*i)->getId() << "NeuralNet init finished!" << endl;		
 	}
-	else {
-		net.loadOptoin("learnConfig.ini");
-	}
-
-	net.init();
 }
 
-int Topology::trainNet() {
-	Timer t;
-	t.start();
-	net.run();
-	t.stop();
 
-	fprintf(stderr, "Run neural net end. Time is %lf s.\n", t.getElapsedTime());
+int Topology::trainNet() {
+	vector<Node*>::iterator i;
+	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
+		Timer t;
+		t.start();
+		(*i)->getNet().run();
+		t.stop();
+		fprintf(stderr, "node %d Run neural net end. Time is %lf s.\n", (*i)->getId(), t.getElapsedTime());
+	}
 
 #ifdef _WIN32
 	getchar();
