@@ -72,7 +72,7 @@ void Node::initialPackage(){
 	if (guid.first == 0 || guid.first == Config::getInstance()->getMaxRow() - 1 
 		|| guid.second == 0 || guid.second == Config::getInstance()->getMaxColumn()-1) {
 		outerNode = true;
-		paGenerateRate = rand() % Config::getInstance()->getMaxGenerateRate() + 1;
+		paGenerateRate = rand() % (int)Config::getInstance()->getMaxGenerateRate() + 1;
 	}
 	else {
 		outerNode = false;
@@ -85,12 +85,13 @@ void Node::initialPackage(){
 }
 
 void Node::generatePaPerRound(vector<Node*>* outerNodes) {
-	float gRatePerRound = (float)Config::getInstance()->getMaxGenerateRate()/ (Config::getInstance()->getBandwidth() / Config::getInstance()->getPackageSize());
-	float threshold = (rand()%200)/100.00*gRatePerRound;
-	float ge_random = (rand() % 1000) / 1000.00;
+	double pNumPer = (double)(Config::getInstance()->getBandwidth() / Config::getInstance()->getPackageSize());
+	double gRatePerRound = Config::getInstance()->getMaxGenerateRate() / pNumPer;
+	int threshold = rand()% 2000 * gRatePerRound;
+	int ge_random = rand() % 1000;
 	while (ge_random < threshold) {
 		generatePackage(outerNodes);
-		ge_random = ge_random + 1;
+		ge_random = ge_random + 1000;
 	}
 	nodeTime = nodeTime + perTransDelay;
 }
@@ -164,7 +165,7 @@ void Node::getTrainedPath(int destId) {
 
 }
 
-void Node::saveNodeData(const char* name, int maxOuterNum, double* inData, bool clean, int dest = -1)
+void Node::saveNodeData(const char* name, int inDataSize, double* inData, bool clean, int dest = -1)
 {
 	char filename[30];
 	int t_outputCount;
@@ -175,7 +176,7 @@ void Node::saveNodeData(const char* name, int maxOuterNum, double* inData, bool 
 		sprintf(filename, "%s%d-%d%s",name, id, dest, ".txt");
 		t_outputCount = sqrt(m_outputCount);
 	}
-	int t_inputCount = maxOuterNum;	
+	int t_inputCount = inDataSize;	
 	FILE *fout = stdout;
 	if (filename)
 		if (clean) {
@@ -205,7 +206,7 @@ void Node::saveNodeData(const char* name, int maxOuterNum, double* inData, bool 
 		
 		for (int i = 0; i < t_outputCount; i++)
 		{
-			if (dest == -1) {
+			if (dest == -1) {				
 				fprintf(fout, "%1.2f", routingMatrix->getData(i));
 			}
 			else {

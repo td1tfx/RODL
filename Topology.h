@@ -19,6 +19,7 @@ private:
 	float cuTime;
 	int maxPackageNum;
 	double* inData;
+	int inDataSize;
 	int totalPCount;
 	int wrongPCount;
 
@@ -48,10 +49,12 @@ public:
 	}
 	void initTrainNet(int argc, char* argv[]);
 	int trainNet();
+	int testNet();
 
 	void saveData(bool clean, const char* filename, int dest);
 	void saveDelay();
-	void readData(const char* filename);
+	void readData(const char* filename); 
+	void saveWrongCount(bool clean);
 
 };
 

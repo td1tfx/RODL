@@ -21,6 +21,7 @@ void main(int argc, char* argv[])
 	//getTrainData(topology);
 	//getTestData(topology);
 	//topology.trainNet();
+	//topology.testNet();
 	system("pause");
 }
 
@@ -72,14 +73,16 @@ void runTrainedPath(Topology topology) {
 	int dest = -1; //all data
 	topology.getAllShortestPath();
 	topology.getAllTrainedPath();
+	topology.saveWrongCount(true);
 	topology.runRoundsWithTrain(10);
 	//topology.saveData(true, filename, dest);
 	int cuRound = 0;
 	int maxRound = Config::getInstance()->getRound();
-	while (cuRound < 1) {
+	while (cuRound < 100) {
 		topology.runRoundsWithTrain(10);
 		topology.getAllShortestPath();
 		topology.getAllTrainedPath();
+		topology.saveWrongCount(false);
 		//topology.saveData(false, filename, dest);
 		cuRound++;
 	}

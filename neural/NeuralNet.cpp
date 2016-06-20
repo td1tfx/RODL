@@ -433,11 +433,15 @@ void NeuralNet::resetOption(int nodeId) {
 
 void NeuralNet::run()
 {	
+
+	train(int(_option.TrainTimes), int(_option.OutputInterval), _option.Tol, _option.Dtol);	
+	outputBondWeight(_option.SaveFile.c_str());
+}
+
+void NeuralNet::runTest(){
 	const char* file = _option.TestFile.c_str();
-	//readTestData(file);
-	train(int(_option.TrainTimes), int(_option.OutputInterval), _option.Tol, _option.Dtol);
-	//test();
-	//outputBondWeight(_option.SaveFile.c_str());
+	readTestData(file);
+	test();
 }
 
 //这里拆一部分数据为测试数据，写法有hack性质

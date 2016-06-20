@@ -89,7 +89,7 @@ public:
 	int getPackageNum() {
 		return qServe->size();
 	}
-	int getNodeTime() {
+	float getNodeTime() {
 		return nodeTime;
 	}
 	float getPerTransDelay() {
@@ -123,7 +123,7 @@ public:
 	Package* outPackage();
 	void inPackage(Package* in_package);
 	void generatePaPerRound(vector<Node*>* outerNodes);
-	void saveNodeData(const char* name, int maxOuterNum, double* inData, bool clean, int dest);
+	void saveNodeData(const char* name, int inDataSize, double* inData, bool clean, int dest);
 	void calculateDelay();
 	void getTrainedPath(int destId);
 	void initInData(int size);

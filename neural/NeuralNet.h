@@ -121,6 +121,7 @@ public:
 
 	void selectTest();
 	void test();
+	void runTest();
 	void printResult(int nodeCount, int groupCount, double* output, double* expect);
 	std::string toString(int a);
 };

@@ -6,14 +6,17 @@ Config* Config::m_config;
 
 Config::Config()
 {
-	packageSize = 256;
-	maxColumn = 4;
-	maxRow = 4;
-	bandwidth = 1024;
-	maxGenerateRate = 4;
-	round = 1000;
-	testRound = 100;
+	_option.loadIni("netConfig.ini");
+	packageSize = _option.PackageSize;
+	maxColumn = _option.MaxColum;
+	maxRow = _option.MaxRow;
+	bandwidth = _option.Bandwidth;
+	maxGenerateRate = _option.MaxGenerateRate;
+	round = _option.Round;
+	testRound = _option.TestRound;
 	maxPacNumPerNode = round;
+	fullMod = _option.IsFullMod;
+	singleDestMod = _option.IsSingleDestMod;
 	while (maxPacNumPerNode < round*maxGenerateRate) {
 		maxPacNumPerNode = maxPacNumPerNode * 10;
 	}	

@@ -1,3 +1,4 @@
+#include "networkOption.h"
 #pragma once
 class Config
 {
@@ -7,7 +8,7 @@ private:
 	~Config();
 	int packageSize;
 	int neuralFirst;
-	int maxGenerateRate;
+	double maxGenerateRate;
 	//row and column <=10;
 	int maxRow;
 	int maxColumn;
@@ -15,7 +16,10 @@ private:
 	int maxPacNumPerNode;
 	int round;
 	int testRound;
+	int fullMod;
+	int singleDestMod;
 
+	NetworkOption _option;
 public:
 	
 	static Config* getInstance() {
@@ -40,7 +44,7 @@ public:
 		return bandwidth;
 	}
 
-	int getMaxGenerateRate() {
+	double getMaxGenerateRate() {
 		return maxGenerateRate;
 	}
 
@@ -53,6 +57,14 @@ public:
 	}
 	int getTestRound() {
 		return testRound;
+	}
+
+	int isFullMod() {
+		return fullMod;
+	}
+
+	int isSingleDestMod() {
+		return singleDestMod;
 	}
 	//void init();
 };

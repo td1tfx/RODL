@@ -38,8 +38,14 @@ bool Topology::initGrid() {
 		}
 	}
 	if (m_nodes->begin() != m_nodes->end()) {
-		inData = new double[m_outerNodes->size()];
-		memset(inData, 0, m_outerNodes->size() * sizeof(inData));
+		if (Config::getInstance()->isFullMod()) {
+			inDataSize = m_nodes->size();
+		}
+		else {
+			inDataSize = m_outerNodes->size();
+		}
+		inData = new double[inDataSize];
+		memset(inData, 0, inDataSize * sizeof(inData));
 		return true;
 	}
 	else return false;
@@ -176,24 +182,30 @@ void Topology::getAllTrainedPath() {
 		//(*i)->getNet().setInputData((*i)->getInData(), m_outerNodes->size(), 0);
 		//(*i)->getNet().run();
 		(*i)->getNet().activeOutputValue((*i)->getInData(), t_output, inputGroupCount);
-		//cout << "node:" << (*i)->getId();
-		for (int j = 0; j < outputNodeCount; j++) {
-			if (t_output[j] > 0.5) {
-				t_output[j] = 1;
+		for (int m = 0; m < m_nodes->size(); m++) {
+			for (int n = 0; n < m_nodes->size(); n++) {
+				if (t_output[m + n*m_nodes->size()] > 0.5) {
+					(*i)->getRoutingMatrix()->getData(m, n) = 1;
+				}
+				else {
+					(*i)->getRoutingMatrix()->getData(m, n) = 0;
+				}	
 			}
-			else {
-				t_output[j] = 0;
-			}
-			//cout << "-" << t_output[j];
 		}
-		//cout << endl;
-		(*i)->getRoutingMatrix()->memcpyDataIn(t_output, outputNodeCount);
+		/*
+		cout << "node:" << (*i)->getId() << ":";
+		for (int m = 0; m < m_nodes->size(); m++) {
+			for (int n = 0; n < m_nodes->size(); n++) {
+				cout << "-" << (*i)->getRoutingMatrix()->getData(m, n);
+			}
+		}
+		cout << endl;
+		*/
 	}
 	delete[] t_output;
 	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
 		getTrainedPath((*i)->getId());
 	}
-	cout << "totalPCount:" << totalPCount << ";wrongPCount" << wrongPCount << endl;
 }
 
 void Topology::getTrainedPath(int destId) {
@@ -238,7 +250,7 @@ void Topology::getTrainedPath(int destId) {
 				}
 			}
 			totalPCount++;
-			cout << "node=" << node_index[*vp.first] << ";dest=" << destId << ";path=" << linkId << endl;
+			//cout << "node=" << node_index[*vp.first] << ";dest=" << destId << ";path=" << linkId << endl;
 		}
 	}
 }
@@ -279,6 +291,7 @@ void Topology::runOneRoundWithTrain() {
 			cuTime = (*i)->getNodeTime();
 		}
 	}
+	int c = 3;
 }
 
 void Topology::runRounds(int num) {
@@ -315,33 +328,51 @@ float Topology::getTwoNodesDistance(Node &p1, Node &p2) {
 
 
 void Topology::getOuterNodesLoad() {
-	vector<Node*>::iterator i;
 	maxPackageNum = 1;
-	int t_inputCount = m_outerNodes->size();
-	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
-		if ((*i)->getPackageNum() + 1 > maxPackageNum) {
-			maxPackageNum = (*i)->getPackageNum() + 1;
+	vector<Node*>::iterator i;
+	if (Config::getInstance()->isFullMod()) {
+		for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
+			if ((*i)->getPackageNum() + 1 > maxPackageNum) {
+				maxPackageNum = (*i)->getPackageNum() + 1;
+			}
+		}
+		for (int i = 0; i < inDataSize; i++) {
+			double pkNum = m_nodes->at(i)->getPackageNum();
+			double a = pkNum / maxPackageNum;
+			inData[i] = a;
+		}
+		for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
+			if ((*i)->getInData() == nullptr) {
+				(*i)->initInData(inDataSize);
+			}
+			(*i)->setInData(inData, inDataSize);
 		}
 	}
-	for (int i = 0; i < t_inputCount; i++) {
-		double pkNum = m_outerNodes->at(i)->getPackageNum();
-		double a = pkNum / maxPackageNum;
-		inData[i] = a;
-	}
-	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
-		if ((*i)->getInData() == nullptr) {
-			(*i)->initInData(t_inputCount);
+	else {
+		for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
+			if ((*i)->getPackageNum() + 1 > maxPackageNum) {
+				maxPackageNum = (*i)->getPackageNum() + 1;
+			}
 		}
-		(*i)->setInData(inData, t_inputCount);
+		for (int i = 0; i < inDataSize; i++) {
+			double pkNum = m_outerNodes->at(i)->getPackageNum();
+			double a = pkNum / maxPackageNum;
+			inData[i] = a;
+		}
+		for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
+			if ((*i)->getInData() == nullptr) {
+				(*i)->initInData(inDataSize);
+			}
+			(*i)->setInData(inData, inDataSize);
+		}
 	}
 }
 
 void Topology::saveData(bool clean = false, const char* filename = "node", int dest = -1) {
 	vector<Node*>::iterator i;	
 	getOuterNodesLoad();
-	int t_inputCount = m_outerNodes->size();
 	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
-		(*i)->saveNodeData(filename, t_inputCount, inData, clean, dest);
+		(*i)->saveNodeData(filename, inDataSize, inData, clean, dest);
 		int t_id = (*i)->getId();
 		//cout << "node:" << t_id << "-data saved!" << endl;
 	}
@@ -352,6 +383,36 @@ void Topology::saveDelay() {
 	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
 		(*i)->calculateDelay();
 	}
+}
+
+void Topology::saveWrongCount(bool clean)
+{
+
+	char* wrongCountFile = "wrongCount.txt";
+	FILE *fout = stdout;
+	if (wrongCountFile)
+		if (clean) {
+			fout = fopen(wrongCountFile, "w+t");
+			fprintf(fout, "cuTime:");
+			fprintf(fout, "\t");
+			fprintf(fout, "totalPCount:");
+			fprintf(fout, "\t");
+			fprintf(fout, "wrongPCount");
+			fprintf(fout, "\n");
+			fprintf(fout, "---------------------------------------\n");
+		}
+		else {
+			fout = fopen(wrongCountFile, "a+t");
+			fprintf(fout, "%1.2f", cuTime);
+			fprintf(fout, "\t");
+			fprintf(fout, "%d", totalPCount);
+			fprintf(fout, "\t");
+			fprintf(fout, "%d", wrongPCount);
+			fprintf(fout, "\n");
+		}
+	
+	if (wrongCountFile)
+		fclose(fout);
 }
 
 void Topology::readData(const char* filename) {
@@ -414,6 +475,23 @@ int Topology::trainNet() {
 #endif
 	return 0;
 }
+
+int Topology::testNet() {
+	vector<Node*>::iterator i;
+	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
+		Timer t;
+		t.start();
+		(*i)->getNet().runTest();
+		t.stop();
+		fprintf(stderr, "node %d test neural net end. Time is %lf s.\n", (*i)->getId(), t.getElapsedTime());
+	}
+
+#ifdef _WIN32
+	getchar();
+#endif
+	return 0;
+}
+
 
 string Topology::toString(int a)
 {
