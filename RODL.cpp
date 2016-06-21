@@ -17,10 +17,10 @@ void main(int argc, char* argv[])
 	topology.initGraph();
 	srand(time(NULL));
 	topology.initTrainNet(argc, argv);
-	runTrainedPath(topology);
+	//runTrainedPath(topology);
 	//getTrainData(topology);
 	//getTestData(topology);
-	//topology.trainNet();
+	topology.trainNet();
 	//topology.testNet();
 	system("pause");
 }

@@ -399,7 +399,7 @@ void NeuralNet::init() {
 	const char* loadfile = _option.LoadFile.c_str();
 
 	if (_option.UseMINST == 0)
-		readData(_option.DataFile.c_str());
+		readData(datafile);
 	else if (_option.UseMINST == 0)
 		readMNIST();
 	else {	
@@ -417,18 +417,40 @@ void NeuralNet::init() {
 	setRegular(_option.Regular);
 }
 
-void NeuralNet::resetOption(int nodeId) {
+void NeuralNet::resetOption(int nodeId, int isSingleMod, int destId) {
 
-	std::string str1 = "save";
-	std::string str2 = "../data/node";
-	std::string str3 = ".txt";
-	std::string str4 = "../test/node";
-	_option.DataFile = str2 + toString(nodeId) + str3;
-	_option.LoadFile = str1 + toString(nodeId) + str3;
-	_option.SaveFile = str1 + toString(nodeId) + str3;
-	_option.TestFile = str4 + toString(nodeId) + str3;;
-	//_option.LoadNet = 1;
-	//_option.UseMINST = -1;
+	if (isSingleMod == 1) {
+		char dataFilename[30];
+		char testFilename[30];
+		char loadFilename[30];
+		char saveFilename[30];
+		char dir[20];
+		sprintf(dataFilename, "%s%d%s%d%s", "../data/node", nodeId, "/dest", destId, ".txt");
+		sprintf(testFilename, "%s%d%s%d%s", "../test/node", nodeId, "/dest", destId, ".txt");
+		sprintf(loadFilename, "%s%d%s%d%s", "node", nodeId, "/save", destId, ".txt");
+		sprintf(saveFilename, "%s%d%s%d%s", "node", nodeId, "/save", destId, ".txt");
+		sprintf(dir, "%s%d", "node", nodeId);
+		if (_access(dir, 0) == -1) {
+			_mkdir(dir);
+		}
+		_option.DataFile = dataFilename;
+		_option.TestFile = testFilename;
+		_option.LoadFile = loadFilename;
+		_option.SaveFile = saveFilename;
+		
+	}
+	else {
+		std::string str1 = "save";
+		std::string str2 = "../data/node";
+		std::string str3 = ".txt";
+		std::string str4 = "../test/node";
+		_option.DataFile = str2 + toString(nodeId) + str3;
+		_option.LoadFile = str1 + toString(nodeId) + str3;
+		_option.SaveFile = str1 + toString(nodeId) + str3;
+		_option.TestFile = str4 + toString(nodeId) + str3;;
+		//_option.LoadNet = 1;
+		//_option.UseMINST = -1;
+	}
 }
 
 void NeuralNet::run()

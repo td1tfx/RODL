@@ -7,7 +7,8 @@
 #include "lib/libconvert.h"
 #include "MNISTFunctions.h"
 #include "Option.h"
-
+#include "io.h"
+#include <direct.h> 
 
 
 //ѧϰģʽ
@@ -114,7 +115,7 @@ public:
 	Option _option;
 	void loadOptoin(const char* filename);
 	void init();
-	void resetOption(int nodeId);
+	void resetOption(int nodeId, int isSingleMod = 0, int destId = 0);
 	void run();
 	void inTrainData(double* inData, int inputGroupCount);
 	double* runOutput();

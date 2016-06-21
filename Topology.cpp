@@ -172,35 +172,49 @@ void Topology::getAllTrainedPath() {
 	int inputGroupCount = 1;
 	int outputNodeCount = m_outerNodes->at(0)->getOutputCount();
 	auto t_output = new double[outputNodeCount*inputGroupCount];
+	auto t_Soutput = new double[sqrt(outputNodeCount)*inputGroupCount];
 	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
 		(*i)->getRoutingMatrix()->initData(0);
 		(*i)->getTrainPath()->initData(-1);
-		(*i)->getNet().resetGroupCount(inputGroupCount);
-		(*i)->getNet().InputNodeCount = m_outerNodes->size();
-		(*i)->getNet().OutputNodeCount = outputNodeCount;
-		//(*i)->getNet().setInputData(_train_inputData, InputNodeCount, 0);
-		//(*i)->getNet().setInputData((*i)->getInData(), m_outerNodes->size(), 0);
-		//(*i)->getNet().run();
-		(*i)->getNet().activeOutputValue((*i)->getInData(), t_output, inputGroupCount);
-		for (int m = 0; m < m_nodes->size(); m++) {
-			for (int n = 0; n < m_nodes->size(); n++) {
-				if (t_output[m + n*m_nodes->size()] > 0.5) {
-					(*i)->getRoutingMatrix()->getData(m, n) = 1;
+		if (Config::getInstance()->isSingleDestMod()) {
+			for (int j = 0; j < m_nodes->size(); j++) {
+				(*i)->getNet(j).resetGroupCount(inputGroupCount);
+				//(*i)->getNet(j).InputNodeCount = m_nodes->size();
+				//(*i)->getNet(j).OutputNodeCount = outputNodeCount;
+				(*i)->getNet(j).activeOutputValue((*i)->getInData(), t_Soutput, inputGroupCount);
+				for (int n = 0; n < m_nodes->size(); n++) {
+					if (t_Soutput[n] > 0.5) {
+						(*i)->getRoutingMatrix()->getData(j, n) = 1;
+					}
+					else {
+						(*i)->getRoutingMatrix()->getData(j, n) = 0;
+					}
 				}
-				else {
-					(*i)->getRoutingMatrix()->getData(m, n) = 0;
-				}	
 			}
 		}
-		/*
+		else {
+			(*i)->getNet().resetGroupCount(inputGroupCount);
+			(*i)->getNet().activeOutputValue((*i)->getInData(), t_output, inputGroupCount);
+			for (int m = 0; m < m_nodes->size(); m++) {
+				for (int n = 0; n < m_nodes->size(); n++) {
+					if (t_output[m + n*m_nodes->size()] > 0.5) {
+						(*i)->getRoutingMatrix()->getData(m, n) = 1;
+					}
+					else {
+						(*i)->getRoutingMatrix()->getData(m, n) = 0;
+					}
+				}
+			}
+		}
+		
 		cout << "node:" << (*i)->getId() << ":";
 		for (int m = 0; m < m_nodes->size(); m++) {
-			for (int n = 0; n < m_nodes->size(); n++) {
-				cout << "-" << (*i)->getRoutingMatrix()->getData(m, n);
-			}
+		for (int n = 0; n < m_nodes->size(); n++) {
+		cout << "-" << (*i)->getRoutingMatrix()->getData(m, n);
+		}
 		}
 		cout << endl;
-		*/
+		
 	}
 	delete[] t_output;
 	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
@@ -372,7 +386,14 @@ void Topology::saveData(bool clean = false, const char* filename = "node", int d
 	vector<Node*>::iterator i;	
 	getOuterNodesLoad();
 	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
-		(*i)->saveNodeData(filename, inDataSize, inData, clean, dest);
+		if (Config::getInstance()->isSingleDestMod()) {
+			for (int j = 0; j < m_nodes->size(); j++) {
+				(*i)->saveNodeData(filename, inDataSize, inData, clean, j);
+			}
+		}
+		else {
+			(*i)->saveNodeData(filename, inDataSize, inData, clean, dest);
+		}
 		int t_id = (*i)->getId();
 		//cout << "node:" << t_id << "-data saved!" << endl;
 	}
@@ -447,15 +468,30 @@ void Topology::readData(const char* filename) {
 void Topology::initTrainNet(int argc, char* argv[]) {
 	vector<Node*>::iterator i;
 	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
-		if (argc > 1) {
-			(*i)->getNet().loadOptoin(argv[1]);
+		if (Config::getInstance()->isSingleDestMod()) {
+			for (int j = 0; j < m_nodes->size(); j++) {
+				if (argc > 1) {
+					(*i)->getNet(j).loadOptoin(argv[1]);
+				}
+				else {
+					(*i)->getNet(j).loadOptoin("learnConfig.ini");
+				}
+				(*i)->getNet(j).resetOption((*i)->getId(), 1, j);
+				(*i)->getNet(j).init();
+				cout << "node:" << (*i)->getId() << "-dest:"<< j << "NeuralNet init finished!" << endl;
+			}
 		}
 		else {
-			(*i)->getNet().loadOptoin("learnConfig.ini");
-		}
-		(*i)->getNet().resetOption((*i)->getId());
-		(*i)->getNet().init();
-		cout << "node:" << (*i)->getId() << "NeuralNet init finished!" << endl;		
+			if (argc > 1) {
+				(*i)->getNet().loadOptoin(argv[1]);
+			}
+			else {
+				(*i)->getNet().loadOptoin("learnConfig.ini");
+			}
+			(*i)->getNet().resetOption((*i)->getId());
+			(*i)->getNet().init();
+			cout << "node:" << (*i)->getId() << "NeuralNet init finished!" << endl;
+		}				
 	}
 }
 
@@ -465,7 +501,14 @@ int Topology::trainNet() {
 	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
 		Timer t;
 		t.start();
-		(*i)->getNet().run();
+		if (Config::getInstance()->isSingleDestMod()) {
+			for (int j = 0; j < m_nodes->size(); j++) {
+				(*i)->getNet(j).run();
+			}
+		}
+		else {
+			(*i)->getNet().run();
+		}		
 		t.stop();
 		fprintf(stderr, "node %d Run neural net end. Time is %lf s.\n", (*i)->getId(), t.getElapsedTime());
 	}

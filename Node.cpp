@@ -29,6 +29,7 @@ Node::Node()
 	outData = new double[m_outputCount];
 	memset(outData, 0, m_outputCount * sizeof(outData));
 	inData = nullptr;
+	netQ = new NeuralNet[sqrt(m_outputCount)];
 }
 
 
@@ -37,6 +38,9 @@ Node::~Node()
 	if (qServe)
 	{
 		delete qServe;
+	}
+	if (netQ) {
+		delete[] netQ;
 	}
 }
 
@@ -168,13 +172,18 @@ void Node::getTrainedPath(int destId) {
 void Node::saveNodeData(const char* name, int inDataSize, double* inData, bool clean, int dest = -1)
 {
 	char filename[30];
+	char dir[20];
 	int t_outputCount;
 	if (dest == -1) {
 		sprintf(filename, "%s%d%s", name, id, ".txt");
 		t_outputCount = m_outputCount;
 	}else{
-		sprintf(filename, "%s%d-%d%s",name, id, dest, ".txt");
-		t_outputCount = sqrt(m_outputCount);
+		sprintf(filename, "%s%d%s%d%s",name, id, "/dest", dest, ".txt");
+		sprintf(dir, "%s%d", name, id);
+		if (_access(dir, 0) == -1) {
+			_mkdir(dir);
+		}
+		t_outputCount = sqrt(m_outputCount);		
 	}
 	int t_inputCount = inDataSize;	
 	FILE *fout = stdout;

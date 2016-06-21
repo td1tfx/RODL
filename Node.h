@@ -51,6 +51,7 @@ private:
 	double* outData;
 	int m_outputCount;
 	NeuralNet net;
+	NeuralNet* netQ;
 
 public:
 	Node();
@@ -71,6 +72,10 @@ public:
 	}
 	NeuralNet& getNet() {
 		return net;
+	}
+
+	NeuralNet& getNet(int i) {
+		return netQ[i];
 	}
 
 	double* getInData() {
