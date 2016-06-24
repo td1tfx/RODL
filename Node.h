@@ -50,6 +50,9 @@ private:
 	double* inData;
 	double* outData;
 	int m_outputCount;
+	int m_pacNum;
+	float allDelay;
+	float allOnehopDelay;
 	NeuralNet net;
 	NeuralNet* netQ;
 
@@ -122,6 +125,16 @@ public:
 	int getNextNode(int dest) {
 		return shortRouting->getData(dest, 0);
 	}
+
+	int getFinalPacNum(){
+		return m_pacNum;
+	}
+	float getAllDelay() {
+		return allDelay;
+	}
+	float getAllOnehopDelay() {
+		return allOnehopDelay;
+	}
 	void generatePackage();
 	void generatePackage(vector<Node*>* outerNodes);
 	void initialPackage();
@@ -129,8 +142,7 @@ public:
 	void inPackage(Package* in_package);
 	void generatePaPerRound(vector<Node*>* outerNodes);
 	void saveNodeData(const char* name, int inDataSize, double* inData, bool clean, int dest);
-	void calculateDelay();
-	void getTrainedPath(int destId);
+	void calculateDelay(bool isTrained = false);
 	void initInData(int size);
 	string toString(int a);
 	

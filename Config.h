@@ -18,6 +18,7 @@ private:
 	int testRound;
 	int fullMod;
 	int singleDestMod;
+	int singleOutputMod;
 
 	NetworkOption _option;
 public:
@@ -65,6 +66,10 @@ public:
 
 	int isSingleDestMod() {
 		return singleDestMod;
+	}
+
+	int isSingleOutputMod() {
+		return singleOutputMod;
 	}
 	//void init();
 };

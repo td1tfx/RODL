@@ -17,6 +17,7 @@ Config::Config()
 	maxPacNumPerNode = round;
 	fullMod = _option.IsFullMod;
 	singleDestMod = _option.IsSingleDestMod;
+	singleOutputMod = _option.IsSingleOutputMod;
 	while (maxPacNumPerNode < round*maxGenerateRate) {
 		maxPacNumPerNode = maxPacNumPerNode * 10;
 	}	

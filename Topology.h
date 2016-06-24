@@ -43,7 +43,7 @@ public:
 	void runOneRoundWithTrain();
 	void runRounds(int num);
 	void runRoundsWithTrain(int num);
-	void getOuterNodesLoad();
+	void getNodesLoad();
 	float getCuTime() {
 		return cuTime;
 	}
@@ -52,7 +52,7 @@ public:
 	int testNet();
 
 	void saveData(bool clean, const char* filename, int dest);
-	void saveDelay();
+	void saveDelay(bool isTrained = false);
 	void readData(const char* filename); 
 	void saveWrongCount(bool clean);
 

@@ -18,9 +18,9 @@ void main(int argc, char* argv[])
 	srand(time(NULL));
 	topology.initTrainNet(argc, argv);
 	//runTrainedPath(topology);
-	//getTrainData(topology);
+	getTrainData(topology);
 	//getTestData(topology);
-	topology.trainNet();
+	//topology.trainNet();
 	//topology.testNet();
 	system("pause");
 }
@@ -54,16 +54,16 @@ void getTrainData(Topology topology) {
 	topology.initGraph();
 	topology.getAllShortestPath();
 	topology.runRounds(10);
-	topology.saveData(true, filename, dest);
+	//topology.saveData(true, filename, dest);
 	int cuRound = 0;
 	int maxRound = Config::getInstance()->getRound();
 	while (cuRound < maxRound) {
 		topology.runRounds(10);
 		topology.getAllShortestPath();
-		topology.saveData(false, filename, dest);
+		//topology.saveData(false, filename, dest);
 		cuRound++;
 	}
-	//topology.saveDelay();
+	topology.saveDelay(false);
 
 	cout << "train finalTime=" << topology.getCuTime() << endl;
 }
@@ -78,7 +78,7 @@ void runTrainedPath(Topology topology) {
 	//topology.saveData(true, filename, dest);
 	int cuRound = 0;
 	int maxRound = Config::getInstance()->getRound();
-	while (cuRound < 100) {
+	while (cuRound < maxRound) {
 		topology.runRoundsWithTrain(10);
 		topology.getAllShortestPath();
 		topology.getAllTrainedPath();
@@ -86,7 +86,7 @@ void runTrainedPath(Topology topology) {
 		//topology.saveData(false, filename, dest);
 		cuRound++;
 	}
-	//topology.saveDelay();
+	topology.saveDelay(true);
 
 	cout << "train finalTime=" << topology.getCuTime() << endl;
 }

@@ -165,15 +165,15 @@ void Node::inPackage(Package* in_package) {
 	}
 }
 
-void Node::getTrainedPath(int destId) {
-
-}
 
 void Node::saveNodeData(const char* name, int inDataSize, double* inData, bool clean, int dest = -1)
 {
 	char filename[30];
 	char dir[20];
 	int t_outputCount;
+	m_pacNum = 0;
+	allDelay = 0;
+	allOnehopDelay = 0;
 	if (dest == -1) {
 		sprintf(filename, "%s%d%s", name, id, ".txt");
 		t_outputCount = m_outputCount;
@@ -219,7 +219,18 @@ void Node::saveNodeData(const char* name, int inDataSize, double* inData, bool c
 				fprintf(fout, "%1.2f", routingMatrix->getData(i));
 			}
 			else {
-				fprintf(fout, "%1.2f", routingMatrix->getData(dest, i));
+				if (Config::getInstance()->isSingleOutputMod()) {
+					int p = shortRouting->getData(dest, 0);
+					if (p == i) {
+						fprintf(fout, "%1.2f", 1.00);
+					}
+					else {
+						fprintf(fout, "%1.2f", 0.00);
+					};
+				}
+				else {
+					fprintf(fout, "%1.2f", routingMatrix->getData(dest, i));
+				}
 			}
 			fprintf(fout, "\t");
 		}		
@@ -229,10 +240,24 @@ void Node::saveNodeData(const char* name, int inDataSize, double* inData, bool c
 		//delete[] outData;
 }
 
-void Node::calculateDelay()
+void Node::calculateDelay(bool isTrained)
 {
+	char dir[20];
 	char delayFilename[50];
-	sprintf(delayFilename, "%s%d%s", "../test/delayOfDestination", id, ".txt");
+	if (isTrained) {
+		sprintf(delayFilename, "%s%d%s", "../TrainedDelay/delayOfDestination", id, ".txt");
+		sprintf(dir, "%s", "../TrainedDelay");
+		if (_access(dir, 0) == -1) {
+			_mkdir(dir);
+		}
+	}
+	else {
+		sprintf(delayFilename, "%s%d%s", "../OSPFDelay/delayOfDestination", id, ".txt");
+		sprintf(dir, "%s", "../OSPFDelay");
+		if (_access(dir, 0) == -1) {
+			_mkdir(dir);
+		}
+	}
 	FILE *fout = stdout;
 	if (delayFilename)
 		fout = fopen(delayFilename, "w+t");
@@ -251,14 +276,12 @@ void Node::calculateDelay()
 		fprintf(fout, "\t");
 		fprintf(fout, "oneHopDeley");
 		fprintf(fout, "\n");
-		int t_pac = 0;
-		float allDelay = 0;
-		float allOnehopDelay = 0;
+
 		Package* pac;
 		while (!qFinished->empty())
 		{
 			pac = qFinished->front();
-			t_pac++;
+			m_pacNum++;
 			allDelay = allDelay + pac->getDelay();
 			float t_oneDelay = pac->getDelay() / pac->getHop();
 			allOnehopDelay = allOnehopDelay + t_oneDelay;
@@ -278,10 +301,10 @@ void Node::calculateDelay()
 			qFinished->pop();			
 		}
 		pac = nullptr;
-		float averageDelay = allDelay / t_pac;
-		float averageOnehopDelay = allOnehopDelay / t_pac;
+		float averageDelay = allDelay / m_pacNum;
+		float averageOnehopDelay = allOnehopDelay / m_pacNum;
 		fprintf(fout, "total package number:");
-		fprintf(fout, "%d", t_pac);
+		fprintf(fout, "%d", m_pacNum);
 		fprintf(fout, "\n");
 		fprintf(fout, "average delay:");
 		fprintf(fout, "%1.2f", averageDelay);

@@ -16,6 +16,7 @@ OPTION_INT(Round, 1000);\
 OPTION_INT(TestRound, 100);\
 OPTION_INT(IsFullMod, 1);\
 OPTION_INT(IsSingleDestMod, 1);\
+OPTION_INT(IsSingleOutputMod, 1);\
 \
 OPTION_DOUBLE(MaxGenerateRate, 1);\
 
