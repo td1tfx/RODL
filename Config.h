@@ -7,8 +7,9 @@ private:
 	static Config* m_config;
 	~Config();
 	int packageSize;
+	int signalingSize;
 	int neuralFirst;
-	double maxGenerateRate;
+	double maxGenerateRate;	
 	//row and column <=10;
 	int maxRow;
 	int maxColumn;
@@ -31,6 +32,10 @@ public:
 	int getPackageSize() {
 		return packageSize;
 	}
+	int getSignalSize() {
+		return signalingSize;
+	}
+
 	int getNeuralFirst() {
 		return neuralFirst;
 	}
@@ -47,6 +52,10 @@ public:
 
 	double getMaxGenerateRate() {
 		return maxGenerateRate;
+	}
+	
+	void resetMaxGenerateRate(double rate) {
+		maxGenerateRate = rate;
 	}
 
 	int gerMaxPacNumPerNode() {

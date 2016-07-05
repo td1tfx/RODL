@@ -82,6 +82,18 @@ void Topology::createNeighborGraph() {
 			}
 		}
 	}
+	pair<vertex_iter, vertex_iter> vp;
+	for (vp = vertices(*conGraph); vp.first != vp.second; ++vp.first) {
+		Node* t_node = m_nodes->at(node_index[*vp.first]);
+		int p = node_index[*vp.first];
+		Vertex pV = *vp.first;
+		adj_iter ai, ai_end;
+		for (tie(ai, ai_end) = adjacent_vertices(pV, *conGraph); ai != ai_end; ++ai) {
+			int nextNode = node_index[*ai];
+			t_node->getNeigherNodes().push_back(nextNode);
+		}
+		t_node->getNodes() = m_nodes;
+	}
 }
 
 void Topology::updateNeighborGraph() {
@@ -146,18 +158,18 @@ bool Topology::getShortestPath(int destId) {
 
 //OSPF
 void Topology::getAllShortestPath() {
-
 	updateNeighborGraph();
 	vector<Node*>::iterator i;
 	for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
 		(*i)->getRoutingMatrix()->initData(0);
 		(*i)->getShortPath()->initData(-1);
 	}	
-	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
+	for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
 		if (getShortestPath((*i)->getId())) {
-			cout << "finished destination:" << (*i)->getId() << endl;
+			//cout << "finished destination:" << (*i)->getId() << endl;
 		}
 	}
+	getNodesLoad();
 }
 
 //use learning algorithm
@@ -309,9 +321,14 @@ void Topology::getTrainedPath(int destId) {
 		}
 	}
 }
+
 void Topology::runOneRound(){
 	vector<Node*>::iterator i;
+	float t_minTime = 9999999999;
 	for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
+		if ((*i)->getNodeTime() > cuTime) {
+			continue;
+		}
 		if((*i)->isOuterNode()){
 			(*i)->generatePaPerRound(m_outerNodes);
 		}
@@ -320,15 +337,65 @@ void Topology::runOneRound(){
 			int t_dest = t_package->getDestination();
 			int t_nextNodeId = (*i)->getNextNode(t_dest);
 			Node* j = m_nodes->at(t_nextNodeId);
-			j->inPackage(t_package);
-			cuTime = (*i)->getNodeTime();
+			j->inPackage(t_package, false);
+			//float t_sigtime = (*i)->getPerTransSignalDelay();
+			//float t_ptime = (*i)->getPerTransDelay();
+			if (t_package->isSignaling()) {
+				(*i)->getNodeTime() += (*i)->getPerTransSignalDelay();
+			}
+			else {
+				(*i)->getNodeTime() += (*i)->getPerTransDelay();
+			}			
+		}else {
+			(*i)->getNodeTime() += (*i)->getPerTransDelay();
+		}
+		if (t_minTime >= (*i)->getNodeTime()) {
+			t_minTime = (*i)->getNodeTime();
+		}
+	}
+	cuTime = t_minTime;
+}
+
+void Topology::runOneSignalRound(bool isTrained) {
+	pair<vertex_iter, vertex_iter> vp;
+	for (vp = vertices(*conGraph); vp.first != vp.second; ++vp.first) {
+		Node* t_node = m_nodes->at(node_index[*vp.first]);
+		int p = node_index[*vp.first];
+		Vertex pV = *vp.first;
+		adj_iter ai, ai_end;
+		if (isTrained) {
+			if (!t_node->isOuterNode()) {
+				continue;
+			}
+			else {
+				for (tie(ai, ai_end) = adjacent_vertices(pV, *conGraph); ai != ai_end; ++ai) {					
+					int nextNode = node_index[*ai];
+					if (!m_nodes->at(nextNode)->isOuterNode()) {
+						continue;
+					}
+					else {
+						t_node->generateSignaling(nextNode);
+					}
+				}
+			}
+		}
+		else {
+			for (tie(ai, ai_end) = adjacent_vertices(pV, *conGraph); ai != ai_end; ++ai) {
+				int nextNode = node_index[*ai];
+				t_node->generateSignaling(nextNode);
+			}
 		}
 	}
 }
 
+
 void Topology::runOneRoundWithTrain() {
 	vector<Node*>::iterator i;
+	float t_minTime = 9999999999;
 	for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
+		if ((*i)->getNodeTime() > cuTime) {
+			continue;
+		}
 		if ((*i)->isOuterNode()) {
 			(*i)->generatePaPerRound(m_outerNodes);
 		}
@@ -339,14 +406,25 @@ void Topology::runOneRoundWithTrain() {
 			int t_sourceNodeId = (*i)->getId();
 			if (t_nextNodeId<0 || t_nextNodeId>m_nodes->size() || getTwoNodesDistance((*i)->getId(), t_nextNodeId) > MAX_IR) {
 				t_nextNodeId = (*i)->getNextNode(t_dest);
-				cout << "traind path is wrong!" << endl;
+				//cout << "traind path is wrong!" << endl;
 			}
 			Node* j = m_nodes->at(t_nextNodeId);
-			j->inPackage(t_package);
-			cuTime = (*i)->getNodeTime();
+			j->inPackage(t_package, true);
+			if (t_package->isSignaling()) {
+				(*i)->getNodeTime() += (*i)->getPerTransSignalDelay();
+			}
+			else {
+				(*i)->getNodeTime() += (*i)->getPerTransDelay();
+			}
+		}
+		else {
+			(*i)->getNodeTime() += (*i)->getPerTransDelay();
+		}
+		if (t_minTime >= (*i)->getNodeTime()) {
+			t_minTime = (*i)->getNodeTime();
 		}
 	}
-	int c = 3;
+	cuTime = t_minTime;
 }
 
 void Topology::runRounds(int num) {
@@ -383,6 +461,7 @@ float Topology::getTwoNodesDistance(Node &p1, Node &p2) {
 
 
 void Topology::getNodesLoad() {
+	runOneSignalRound(isTrained);
 	maxPackageNum = 1;
 	vector<Node*>::iterator i;
 	if (Config::getInstance()->isFullMod()) {
@@ -393,7 +472,14 @@ void Topology::getNodesLoad() {
 		}
 		for (int i = 0; i < inDataSize; i++) {
 			double pkNum = m_nodes->at(i)->getPackageNum();
-			double a = pkNum / maxPackageNum;
+			double a;
+			if (!m_nodes->at(i)->isOuterNode()) {
+				a = rand() % 1000 / 1000;
+			}
+			else {
+				a = pkNum / maxPackageNum;
+			}
+			//a = pkNum / maxPackageNum;
 			inData[i] = a;
 		}
 		for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
@@ -456,7 +542,9 @@ void Topology::saveData(bool clean = false, const char* filename = "node", int d
 	}
 }
 
-void Topology::saveDelay(bool isTrained) {
+void Topology::saveDelay(bool isTrained,double genarateRate) {
+	char* DelayFile = "totalDelay.txt";
+	FILE *fout = stdout;
 	vector<Node*>::iterator i;
 	int totalPacNum = 0;
 	float totalDelay = 0;
@@ -469,8 +557,28 @@ void Topology::saveDelay(bool isTrained) {
 	}
 	float averageDelay = totalDelay / totalPacNum;
 	float averageOnehopDelay = totalOnehopDelay / totalPacNum;
+	float throughputPerSecend = totalPacNum / cuTime;
+	if (DelayFile){
+		fout = fopen(DelayFile, "a+t");
+		fprintf(fout, "ganerateRate = ");
+		fprintf(fout, "%1.2f", genarateRate);
+		fprintf(fout, "\n");
+		fprintf(fout, "averageDelay = ");
+		fprintf(fout, "%1.5f", averageDelay);
+		fprintf(fout, "\n");
+		fprintf(fout, "averageOnehopDelay = ");
+		fprintf(fout, "%1.5f", averageOnehopDelay);
+		fprintf(fout, "\n");
+		fprintf(fout, "throughputPerSecend = ");
+		fprintf(fout, "%1.5f", throughputPerSecend);
+		fprintf(fout, "\n");
+	}
+
+	cout << "ganerateRate = " << genarateRate << endl;
 	cout << "averageDelay = " << averageDelay << endl;
 	cout << "averageOnehopDelay = " << averageOnehopDelay << endl;
+	cout << "throughputPerSecend = " << throughputPerSecend << endl;
+
 }
 
 void Topology::saveWrongCount(bool clean)
@@ -546,7 +654,7 @@ void Topology::initTrainNet(int argc, char* argv[]) {
 					}
 					(*i)->getNet(j).resetOption((*i)->getId(), 1, j);
 					(*i)->getNet(j).init();
-					cout << "node:" << (*i)->getId() << "-dest:" << j << "NeuralNet init finished!" << endl;
+					//cout << "node:" << (*i)->getId() << "-dest:" << j << "NeuralNet init finished!" << endl;
 				}
 			}
 			else {
@@ -558,7 +666,7 @@ void Topology::initTrainNet(int argc, char* argv[]) {
 				}
 				(*i)->getNet().resetOption((*i)->getId());
 				(*i)->getNet().init();
-				cout << "node:" << (*i)->getId() << "NeuralNet init finished!" << endl;
+				//cout << "node:" << (*i)->getId() << "NeuralNet init finished!" << endl;
 			}
 		}
 	}
@@ -574,7 +682,7 @@ void Topology::initTrainNet(int argc, char* argv[]) {
 					}
 					(*i)->getNet(j).resetOption((*i)->getId(), 1, j);
 					(*i)->getNet(j).init();
-					cout << "node:" << (*i)->getId() << "-dest:" << j << "NeuralNet init finished!" << endl;
+					//cout << "node:" << (*i)->getId() << "-dest:" << j << "NeuralNet init finished!" << endl;
 				}
 			}
 			else {
@@ -586,7 +694,7 @@ void Topology::initTrainNet(int argc, char* argv[]) {
 				}
 				(*i)->getNet().resetOption((*i)->getId());
 				(*i)->getNet().init();
-				cout << "node:" << (*i)->getId() << "NeuralNet init finished!" << endl;
+				//cout << "node:" << (*i)->getId() << "NeuralNet init finished!" << endl;
 			}
 		}
 	}

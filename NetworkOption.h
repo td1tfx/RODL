@@ -9,6 +9,7 @@ struct NetworkOption
 OPTION_STRING(DataFile, "p.txt");\
 \
 OPTION_INT(PackageSize, 256);\
+OPTION_INT(SignalingSize, 32);\
 OPTION_INT(MaxColum, 4);\
 OPTION_INT(MaxRow, 4);\
 OPTION_INT(Bandwidth, 1024);\

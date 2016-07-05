@@ -6,6 +6,7 @@ Node::Node()
 {
 	qServe = new std::queue<Package*>;
 	qFinished = new std::queue<Package*>;
+	qSFinished = new std::queue<Package*>;
 	packageCount = 0;
 	id = -11;
 	guid.first = -1;
@@ -16,6 +17,7 @@ Node::Node()
 	float t_pSize = Config::getInstance()->getPackageSize();
 	float t_bWidth = Config::getInstance()->getBandwidth();
 	perTransDelay = t_pSize / t_bWidth;
+	perTransSignalDelay = Config::getInstance()->getSignalSize() / t_bWidth;
 	int maxRow = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn();
 	int maxColumn = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn();
 	routingMatrix = new d_matrix(maxRow, maxColumn);
@@ -76,7 +78,7 @@ void Node::initialPackage(){
 	if (guid.first == 0 || guid.first == Config::getInstance()->getMaxRow() - 1 
 		|| guid.second == 0 || guid.second == Config::getInstance()->getMaxColumn()-1) {
 		outerNode = true;
-		paGenerateRate = rand() % (int)Config::getInstance()->getMaxGenerateRate() + 1;
+		//paGenerateRate = rand() % (int)Config::getInstance()->getMaxGenerateRate() + 1;
 	}
 	else {
 		outerNode = false;
@@ -97,7 +99,6 @@ void Node::generatePaPerRound(vector<Node*>* outerNodes) {
 		generatePackage(outerNodes);
 		ge_random = ge_random + 1000;
 	}
-	nodeTime = nodeTime + perTransDelay;
 }
 
 void Node::generatePackage() {
@@ -127,6 +128,7 @@ void Node::generatePackage() {
 	packageCount++;
 }
 
+
 void Node::generatePackage(vector<Node*>* outerNodes) {
 	int pid = id * Config::getInstance()->gerMaxPacNumPerNode() + packageCount + 1;
 	Package *m_package = new Package(pid, nodeTime);
@@ -134,6 +136,7 @@ void Node::generatePackage(vector<Node*>* outerNodes) {
 	while (dest == id) {
 		dest = outerNodes->at(rand() % outerNodes->size())->getId();
 	}
+	m_package->setSource(id);
 	m_package->setDestination(dest);
 	m_package->setGenerateTime(nodeTime);
 	int size = Config::getInstance()->getMaxColumn()*Config::getInstance()->getMaxRow();
@@ -145,26 +148,93 @@ void Node::generatePackage(vector<Node*>* outerNodes) {
 	packageCount++;
 }
 
+void Node::generateSignaling(int dest) {
+	int pid = -id * Config::getInstance()->gerMaxPacNumPerNode() - sPackageCount - 1;;
+	Package *m_package = new Package(pid, nodeTime);
+	m_package->setSource(id);
+	m_package->setDestination(dest);
+	m_package->setGenerateTime(nodeTime);
+	int size = Config::getInstance()->getMaxColumn()*Config::getInstance()->getMaxRow();
+	m_package->setPathSize(size);
+	for (int i = 0; i < size; i++) {
+		m_package->getPathData(i) = trainRouting->getData(dest, i);
+	}
+	m_package->setSignaling();
+	qServe->push(m_package);
+	sPackageCount++;
+	/*
+	while (dest < outerNodes->size()) {
+		if (dest != id) {
+			dest = outerNodes->at(dest)->getId();
+			Package *m_package = new Package(pid, nodeTime);
+			m_package->setDestination(dest);
+			m_package->setGenerateTime(nodeTime);
+			m_package->setSignaling();
+			int size = Config::getInstance()->getMaxColumn()*Config::getInstance()->getMaxRow();
+			m_package->setPathSize(size);
+			for (int i = 0; i < size; i++) {
+				int p = shortRouting->getData(dest, i);
+				m_package->getPathData(i) = shortRouting->getData(dest, i);
+			}
+			qServe->push(m_package);			
+		}
+		dest++;
+	}
+	*/
+}
+
 Package* Node::outPackage() {
 	Package* out_package = qServe->front();
 	qServe->pop();
 	return out_package;
 }
 
-void Node::inPackage(Package* in_package) {
+void Node::inPackage(Package* in_package,bool istrained) {
 	in_package->getHop()++;
 	if (in_package->getDestination() == id) {
 		if (in_package->getGenerateTime() == nodeTime) {	//this is to avoid the same round
 			in_package->setTerminalTime(nodeTime + perTransDelay);
 		}
-		in_package->setTerminalTime(nodeTime);		
-		qFinished->push(in_package);
+		if (in_package->isSignaling()) {
+			/*
+			if (in_package->getId() < 0) {
+			
+			}
+				for(in_package->getId() == )
+			*/
+			if (in_package->getHop() > 3) {
+								
+			}
+			else {
+				vector<int>::iterator iter;
+				for (iter = neigherNodes.begin(); iter != neigherNodes.end(); iter++) {
+					int dest = *iter;
+					if (istrained) {
+						if(!m_nodes->at(dest)->isOuterNode())
+						continue;
+					}					
+					Package *sPac = new Package;
+					*sPac = *in_package;
+					sPac->setDestination(dest);
+					qServe->push(sPac);
+				}
+				//need more
+			}
+			qSFinished->push(in_package);			
+		}
+		else {
+			in_package->setTerminalTime(nodeTime);
+			qFinished->push(in_package);
+		}
 	}
 	else {
 		qServe->push(in_package);
 	}
 }
 
+void Node::broadcast() {
+
+}
 
 void Node::saveNodeData(const char* name, int inDataSize, double* inData, bool clean, int dest = -1)
 {

@@ -30,6 +30,8 @@ private:
 
 
 public:
+	bool isTrained;
+
 	Topology();
 	~Topology();
 	bool initGrid();
@@ -40,6 +42,7 @@ public:
 	void getAllShortestPath();
 	void getAllTrainedPath();
 	void runOneRound();
+	void runOneSignalRound(bool isTrained);
 	void runOneRoundWithTrain();
 	void runRounds(int num);
 	void runRoundsWithTrain(int num);
@@ -52,7 +55,7 @@ public:
 	int testNet();
 
 	void saveData(bool clean, const char* filename, int dest);
-	void saveDelay(bool isTrained = false);
+	void saveDelay(bool isTrained = false, double genarateRate = 1);
 	void readData(const char* filename); 
 	void saveWrongCount(bool clean);
 

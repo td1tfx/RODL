@@ -8,6 +8,7 @@ Config::Config()
 {
 	_option.loadIni("netConfig.ini");
 	packageSize = _option.PackageSize;
+	signalingSize = _option.SignalingSize;
 	maxColumn = _option.MaxColum;
 	maxRow = _option.MaxRow;
 	bandwidth = _option.Bandwidth;

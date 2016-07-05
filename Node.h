@@ -39,14 +39,17 @@ private:
 	int cuRound;
 	std::queue<Package*>* qServe;
 	std::queue<Package*>* qFinished;
+	std::queue<Package*>* qSFinished;
 	float serveTime;
 	int packageCount;
+	int sPackageCount;
 	int paGenerateRate;
 	d_matrix* routingMatrix;
 	d_matrix* shortRouting;
 	d_matrix* trainRouting;
 	float nodeTime;
 	float perTransDelay;
+	float perTransSignalDelay;
 	double* inData;
 	double* outData;
 	int m_outputCount;
@@ -55,6 +58,8 @@ private:
 	float allOnehopDelay;
 	NeuralNet net;
 	NeuralNet* netQ;
+	vector<int> neigherNodes;
+	vector<Node*>* m_nodes;
 
 public:
 	Node();
@@ -63,6 +68,10 @@ public:
 	//void outPutPackage(Package pacage);
 	bool isOuterNode();
 	void setId(int a, int b);
+	vector<Node*>*& getNodes(){
+		return m_nodes;
+	}		
+
 	int getId() {
 		return id;
 	}
@@ -81,6 +90,10 @@ public:
 		return netQ[i];
 	}
 
+	vector<int>& getNeigherNodes() {
+		return neigherNodes;
+	}
+
 	double* getInData() {
 		return inData;
 	}
@@ -97,7 +110,7 @@ public:
 	int getPackageNum() {
 		return qServe->size();
 	}
-	float getNodeTime() {
+	float& getNodeTime() {
 		return nodeTime;
 	}
 	float getPerTransDelay() {
@@ -135,16 +148,24 @@ public:
 	float getAllOnehopDelay() {
 		return allOnehopDelay;
 	}
+	float getPerTransSignalDelay() {
+		return perTransSignalDelay;
+	}
+
 	void generatePackage();
 	void generatePackage(vector<Node*>* outerNodes);
+	void generateSignaling(int dest);
 	void initialPackage();
 	Package* outPackage();
-	void inPackage(Package* in_package);
+	void inPackage(Package* in_package,bool istrained);
 	void generatePaPerRound(vector<Node*>* outerNodes);
 	void saveNodeData(const char* name, int inDataSize, double* inData, bool clean, int dest);
 	void calculateDelay(bool isTrained = false);
 	void initInData(int size);
+	void broadcast();
+
 	string toString(int a);
 	
+
 };
 

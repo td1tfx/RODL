@@ -9,9 +9,11 @@ private:
 	float delay;
 	float generateTime;
 	float terminalTime;
+	int source;
 	int destination;
 	int hop;
 	double* path;
+	bool signaling;
 
 public:
 	Package();
@@ -22,6 +24,14 @@ public:
 	}
 	int getId() {
 		return id;
+	}
+
+	int getSource() {
+		return source;
+	}
+
+	void setSource(int id) {
+		source = id;
 	}
 
 	int getDestination() {
@@ -63,5 +73,12 @@ public:
 		terminalTime = time;
 	}
 
+	void setSignaling() {
+		signaling = true;
+		size = Config::getInstance()->getSignalSize();
+	}
+	bool isSignaling() {
+		return signaling;
+	}
 };
 
