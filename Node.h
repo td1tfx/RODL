@@ -110,6 +110,7 @@ public:
 	int getPackageNum() {
 		return qServe->size();
 	}
+
 	float& getNodeTime() {
 		return nodeTime;
 	}
@@ -142,6 +143,11 @@ public:
 	int getFinalPacNum(){
 		return m_pacNum;
 	}
+
+	int getFinalSPacNum() {
+		return qSFinished->size();
+	}
+
 	float getAllDelay() {
 		return allDelay;
 	}

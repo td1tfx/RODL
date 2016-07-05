@@ -547,6 +547,7 @@ void Topology::saveDelay(bool isTrained,double genarateRate) {
 	FILE *fout = stdout;
 	vector<Node*>::iterator i;
 	int totalPacNum = 0;
+	int totalSpacNum = 0;
 	float totalDelay = 0;
 	float totalOnehopDelay = 0;
 	for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
@@ -554,6 +555,7 @@ void Topology::saveDelay(bool isTrained,double genarateRate) {
 		totalPacNum += (*i)->getFinalPacNum();
 		totalDelay += (*i)->getAllDelay();
 		totalOnehopDelay += (*i)->getAllOnehopDelay();
+		totalSpacNum += (*i)->getFinalSPacNum();
 	}
 	float averageDelay = totalDelay / totalPacNum;
 	float averageOnehopDelay = totalOnehopDelay / totalPacNum;
@@ -572,12 +574,16 @@ void Topology::saveDelay(bool isTrained,double genarateRate) {
 		fprintf(fout, "throughputPerSecend = ");
 		fprintf(fout, "%1.5f", throughputPerSecend);
 		fprintf(fout, "\n");
+		fprintf(fout, "totalSignalPacNum = ");
+		fprintf(fout, "%d", totalSpacNum);
+		fprintf(fout, "\n");
 	}
 
 	cout << "ganerateRate = " << genarateRate << endl;
 	cout << "averageDelay = " << averageDelay << endl;
 	cout << "averageOnehopDelay = " << averageOnehopDelay << endl;
 	cout << "throughputPerSecend = " << throughputPerSecend << endl;
+	cout << "totalSignalPacNum = " << totalSpacNum << endl;
 
 }
 

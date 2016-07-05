@@ -19,9 +19,9 @@ void main(int argc, char* argv[])
 		srand(time(NULL));
 		double rate = 0.8 + i*0.1;
 		Config::getInstance()->resetMaxGenerateRate(0.8 + i*0.1);
-		//topology->initTrainNet(argc, argv);		
-		//runTrainedPath(topology, rate);
-		getTrainData(topology, rate);
+		topology->initTrainNet(argc, argv);		
+		runTrainedPath(topology, rate);
+		//getTrainData(topology, rate);
 		//getTestData(topology);
 		//topology->trainNet();
 		//topology->testNet();
