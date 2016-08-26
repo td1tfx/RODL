@@ -660,7 +660,7 @@ void Topology::initTrainNet(int argc, char* argv[]) {
 					}
 					(*i)->getNet(j).resetOption((*i)->getId(), 1, j);
 					(*i)->getNet(j).init();
-					//cout << "node:" << (*i)->getId() << "-dest:" << j << "NeuralNet init finished!" << endl;
+					cout << "node:" << (*i)->getId() << "-dest:" << j << "NeuralNet init finished!" << endl;
 				}
 			}
 			else {
@@ -715,7 +715,7 @@ int Topology::trainNet() {
 			Timer t;
 			t.start();
 			if (Config::getInstance()->isSingleDestMod()) {
-				for (int j = 0; j < m_nodes->size(); j++) {
+				for (int j = 0; j < 1 ; j++) {
 					(*i)->getNet(j).run();
 				}
 			}
